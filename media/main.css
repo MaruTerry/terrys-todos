@@ -1,0 +1,11 @@
+body {
+    background-color: transparent;
+}
+
+/* Add this to your CSS file */
+.not-done {
+}
+
+.done {
+    text-decoration: line-through; /* strike through the text for done todos */
+}

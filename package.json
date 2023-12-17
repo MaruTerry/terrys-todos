@@ -1,42 +1,149 @@
 {
-  "name": "terrys-todos",
-  "displayName": "Terry's ToDos",
-  "description": "An easy way to keep track of your ToDos",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.84.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "terrys-todos.helloWorld",
-        "title": "Hello World"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.84.0",
-    "@types/mocha": "^10.0.3",
-    "@types/node": "18.x",
-    "@typescript-eslint/eslint-plugin": "^6.9.0",
-    "@typescript-eslint/parser": "^6.9.0",
-    "eslint": "^8.52.0",
-    "glob": "^10.3.10",
-    "mocha": "^10.2.0",
-    "typescript": "^5.2.2",
-    "@vscode/test-electron": "^2.3.6"
-  }
+    "name": "terrys-todos",
+    "displayName": "Terry's Todos",
+    "description": "An easy way to keep track of your todos",
+    "version": "0.0.1",
+    "icon": "resources/terrys-todos.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/MaruTerry/terrys-todos"
+    },
+    "pricing": "Free",
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "author": {
+        "name": "MaruTerry"
+    },
+    "engines": {
+        "vscode": "^1.84.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "terrys-todos.createTodo",
+                "title": "Create Todo",
+                "icon": "resources/add.svg"
+            },
+            {
+                "command": "terrys-todos.refreshTodos",
+                "title": "Refresh Todos",
+                "icon": "resources/refresh.svg"
+            },
+            {
+                "command": "terrys-todos.refreshDoneTodos",
+                "title": "Refresh Done Todos",
+                "icon": "resources/refresh.svg"
+            },
+            {
+                "command": "terrys-todos.setTodoDone",
+                "title": "Mark as done"
+            },
+            {
+                "command": "terrys-todos.setTodoNotDone",
+                "title": "Mark as not done"
+            },
+            {
+                "command": "terrys-todos.editTodo",
+                "title": "Edit"
+            },
+            {
+                "command": "terrys-todos.deleteTodo",
+                "title": "Delete"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "terrys-todos",
+                    "title": "Terry's Todos",
+                    "icon": "resources/terrys-todos.svg"
+                }
+            ]
+        },
+        "views": {
+            "terrys-todos": [
+                {
+                    "id": "todos-tree",
+                    "name": "Todos",
+                    "type": "tree"
+                },
+                {
+                    "id": "done-todos-tree",
+                    "name": "Done Todos",
+                    "type": "tree"
+                },
+                {
+                    "id": "show-todos",
+                    "name": "Todos",
+                    "type": "webview"
+                },
+                {
+                    "id": "create-todo",
+                    "name": "Create Todo",
+                    "type": "webview"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "terrys-todos.createTodo",
+                    "when": "view == todos-tree",
+                    "group": "navigation"
+                },
+                {
+                    "command": "terrys-todos.refreshTodos",
+                    "when": "view == todos-tree",
+                    "group": "navigation"
+                },
+                {
+                    "command": "terrys-todos.refreshDoneTodos",
+                    "when": "view == done-todos-tree",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "terrys-todos.setTodoDone",
+                    "when": "view == todos-tree && viewItem === todo"
+                },
+                {
+                    "command": "terrys-todos.setTodoNotDone",
+                    "when": "view == done-todos-tree && viewItem === doneTodo"
+                },
+                {
+                    "command": "terrys-todos.editTodo",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                },
+                {
+                    "command": "terrys-todos.deleteTodo",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.84.0",
+        "@types/mocha": "^10.0.3",
+        "@types/node": "18.x",
+        "@typescript-eslint/eslint-plugin": "^6.9.0",
+        "@typescript-eslint/parser": "^6.9.0",
+        "eslint": "^8.52.0",
+        "glob": "^10.3.10",
+        "mocha": "^10.2.0",
+        "typescript": "^5.2.2",
+        "@vscode/test-electron": "^2.3.6"
+    }
 }

@@ -1,26 +1,57 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import { CreateTodoWebviewProvider } from "./providers/createTodoWebviewProvider";
+import { ShowTodosWebviewProvider } from "./providers/showTodosWebviewProvider";
+import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
+import { createTodo, updateTodo } from "./models/todo";
+import { CustomTreeItem } from "./models/customTreeItem";
+import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            ShowTodosWebviewProvider.viewType,
+            new ShowTodosWebviewProvider(context.extensionUri)
+        )
+    );
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "terrys-todos" is now active!');
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            CreateTodoWebviewProvider.viewType,
+            new CreateTodoWebviewProvider(context.extensionUri)
+        )
+    );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('terrys-todos.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Terry&#39;s ToDos!');
-	});
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.createTodo", () => {
+            createTodo();
+        })
+    );
 
-	context.subscriptions.push(disposable);
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoDone", (todo: CustomTreeItem) => {
+            updateTodo(todo);
+        })
+    );
+
+    const todosTreeDataProvider = new TodosTreeDataProvider();
+
+    context.subscriptions.push(vscode.window.registerTreeDataProvider("todos-tree", todosTreeDataProvider));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
+            todosTreeDataProvider.refresh();
+        })
+    );
+
+    const doneTodosTreeDataProvider = new DoneTodosTreeDataProvider();
+
+    context.subscriptions.push(vscode.window.registerTreeDataProvider("done-todos-tree", doneTodosTreeDataProvider));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.refreshDoneTodos", () => {
+            doneTodosTreeDataProvider.refresh();
+        })
+    );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
