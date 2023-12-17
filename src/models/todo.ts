@@ -10,37 +10,23 @@ export interface Todo {
     done: boolean;
 }
 
-export async function readAndParseTodos(): Promise<Todo[]> {
-    try {
-        // Check if there is an open workspace folder
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders || workspaceFolders.length === 0) {
-            console.error("No workspace folder is open.");
-            return [];
-        }
-
-        // Get the first workspace folder (you may need to adjust this based on your requirements)
-        const workspaceFolder = workspaceFolders[0];
-
-        // Construct the path to the .todo file within the workspace folder
-        const todoFilePath = vscode.Uri.joinPath(workspaceFolder.uri, ".todo");
-
-        // Read the content of the file
-        const buffer = await vscode.workspace.fs.readFile(todoFilePath);
-        const fileContent = buffer.toString();
-
-        const todos: Todo[] = [];
-        fileContent.split(";").forEach((todoString) => {
-            let tmpTodo: Todo = { text: "", done: false };
-            tmpTodo.done = todoString.startsWith("-");
-            tmpTodo.text = todoString.substring(1);
-            todos.push(tmpTodo);
+/**
+ * Returns all existing todos.
+ * @returns A promise for an array of todos
+ */
+export async function getAllTodos(): Promise<Todo[]> {
+    let todos: Todo[] = [];
+    const todosAsArrays: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+    if (todosAsArrays) {
+        todosAsArrays.forEach((arrayTodo) => {
+            todos.push({
+                text: arrayTodo[0],
+                done: arrayTodo[1] === "true" ? true : false,
+            });
         });
         return todos;
-    } catch (error) {
-        console.error("Error reading .todo file:", error);
-        return [];
     }
+    return todos;
 }
 
 /**
@@ -48,24 +34,150 @@ export async function readAndParseTodos(): Promise<Todo[]> {
  *
  * @param treeItem - The CustomTreeItem representing the todo to be created.
  */
-export function createTodo() {
-    vscode.window.showInformationMessage("Created Todo.");
+export async function createTodo() {
+    let text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
+    if (text) {
+        let todos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        if (todos) {
+            todos.push([text, "false"]);
+            vscode.workspace
+                .getConfiguration()
+                .update("terrys-todos.todos", todos, vscode.ConfigurationTarget.Workspace);
+        }
+    }
 }
 
 /**
- * Delete a todo.
+ * Edits a todo.
+ *
+ * @param treeItem - The CustomTreeItem representing the todo to be edited.
+ */
+export async function editTodo(treeItem: CustomTreeItem) {
+    let textOfTodoToEdit = treeItem.text;
+    if (textOfTodoToEdit) {
+        let todos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        if (todos) {
+            todos.forEach(async (arrayTodo) => {
+                if (arrayTodo[0] === textOfTodoToEdit) {
+                    let newText = await vscode.window.showInputBox({ prompt: "Enter the new todo" });
+                    if (newText) {
+                        arrayTodo[0] = newText;
+                        vscode.workspace
+                            .getConfiguration()
+                            .update("terrys-todos.todos", todos, vscode.ConfigurationTarget.Workspace);
+                    }
+                }
+            });
+        }
+    }
+}
+
+/**
+ * Deletes a todo.
  *
  * @param treeItem - The CustomTreeItem representing the todo to be deleted.
  */
 export function deleteTodo(treeItem: CustomTreeItem) {
-    vscode.window.showInformationMessage("Deleted Todo '" + treeItem.label + "'.");
+    let textOfTodoToDelete = treeItem.text;
+    if (textOfTodoToDelete) {
+        let currentTodos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        let newTodos: string[][] = [];
+        if (currentTodos) {
+            currentTodos.forEach((arrayTodo) => {
+                if (arrayTodo[0] !== textOfTodoToDelete) {
+                    newTodos.push(arrayTodo);
+                }
+            });
+            vscode.workspace
+                .getConfiguration()
+                .update("terrys-todos.todos", newTodos, vscode.ConfigurationTarget.Workspace);
+        }
+    }
 }
 
 /**
- * Updates a todo.
+ * Deletes all todos.
+ */
+export async function deleteAllTodos() {
+    let confirmation = await vscode.window.showInputBox({
+        prompt: "Are you sure to delete all todos? Please type 'yes' to confirm",
+    });
+    if (confirmation === "yes") {
+        let currentTodos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        let newTodos: string[][] = [];
+        if (currentTodos) {
+            currentTodos.forEach((arrayTodo) => {
+                if (arrayTodo[1] === "true") {
+                    newTodos.push(arrayTodo);
+                }
+            });
+            vscode.workspace
+                .getConfiguration()
+                .update("terrys-todos.todos", newTodos, vscode.ConfigurationTarget.Workspace);
+        }
+    } else {
+        vscode.window.showInformationMessage("Process canceled");
+    }
+}
+
+/**
+ * Deletes all done todos.
+ */
+export async function deleteAllDoneTodos() {
+    let currentTodos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+    let newTodos: string[][] = [];
+    if (currentTodos) {
+        currentTodos.forEach((arrayTodo) => {
+            if (arrayTodo[1] === "false") {
+                newTodos.push(arrayTodo);
+            }
+        });
+        vscode.workspace
+            .getConfiguration()
+            .update("terrys-todos.todos", newTodos, vscode.ConfigurationTarget.Workspace);
+    }
+}
+
+/**
+ * Marks a todo as done.
  *
  * @param treeItem - The CustomTreeItem representing the todo to be updated.
  */
-export function updateTodo(todo: CustomTreeItem) {
-    vscode.window.showInformationMessage("Updated Todo '" + todo.label + "'.");
+export function setTodoDone(treeItem: CustomTreeItem) {
+    let textOfTodoToUpdate = treeItem.text;
+    if (textOfTodoToUpdate) {
+        let todos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        if (todos) {
+            todos.forEach((arrayTodo) => {
+                if (arrayTodo[0] === textOfTodoToUpdate) {
+                    arrayTodo[1] = "true";
+                }
+            });
+            vscode.workspace
+                .getConfiguration()
+                .update("terrys-todos.todos", todos, vscode.ConfigurationTarget.Workspace);
+        }
+    }
+}
+
+/**
+ * Marks a todo as not done.
+ *
+ * @param treeItem - The CustomTreeItem representing the todo to be updated.
+ */
+export function setTodoNotDone(treeItem: CustomTreeItem) {
+    let textOfTodoToUpdate = treeItem.text;
+    if (textOfTodoToUpdate) {
+        let todos: string[][] | undefined = vscode.workspace.getConfiguration().get("terrys-todos.todos");
+        if (todos) {
+            todos.forEach((arrayTodo) => {
+                if (arrayTodo[0] === textOfTodoToUpdate) {
+                    arrayTodo[1] = "false";
+                }
+            });
+            vscode.workspace
+                .getConfiguration()
+                .update("terrys-todos.todos", todos, vscode.ConfigurationTarget.Workspace);
+        }
+    }
 }

@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
@@ -53,6 +53,16 @@
             {
                 "command": "terrys-todos.deleteTodo",
                 "title": "Delete"
+            },
+            {
+                "command": "terrys-todos.deleteAllTodos",
+                "title": "Delete All",
+                "icon": "resources/trash.svg"
+            },
+            {
+                "command": "terrys-todos.deleteAllDoneTodos",
+                "title": "Delete All",
+                "icon": "resources/trash.svg"
             }
         ],
         "viewsContainers": {
@@ -75,16 +85,6 @@
                     "id": "done-todos-tree",
                     "name": "Done Todos",
                     "type": "tree"
-                },
-                {
-                    "id": "show-todos",
-                    "name": "Todos",
-                    "type": "webview"
-                },
-                {
-                    "id": "create-todo",
-                    "name": "Create Todo",
-                    "type": "webview"
                 }
             ]
         },
@@ -96,12 +96,22 @@
                     "group": "navigation"
                 },
                 {
+                    "command": "terrys-todos.deleteAllTodos",
+                    "when": "view == todos-tree",
+                    "group": "navigation"
+                },
+                {
                     "command": "terrys-todos.refreshTodos",
                     "when": "view == todos-tree",
                     "group": "navigation"
                 },
                 {
                     "command": "terrys-todos.refreshDoneTodos",
+                    "when": "view == done-todos-tree",
+                    "group": "navigation"
+                },
+                {
+                    "command": "terrys-todos.deleteAllDoneTodos",
                     "when": "view == done-todos-tree",
                     "group": "navigation"
                 }
@@ -124,6 +134,38 @@
                     "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
                 }
             ]
+        },
+        "keybindings": [
+            {
+                "command": "terrys-todos.createTodo",
+                "key": "ctrl+shift+t",
+                "mac": "cmd+shift+t"
+            }
+        ],
+        "configuration": {
+            "title": "terrys-todos",
+            "properties": {
+                "terrys-todos.todos": {
+                    "type": "array",
+                    "default": [
+                        [
+                            "This is todo number 1",
+                            "false"
+                        ],
+                        [
+                            "This is todo number 2",
+                            "true"
+                        ]
+                    ],
+                    "items": {
+                        "type": "string",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "description": "All todos handled by Terry's Todos"
+                }
+            }
         }
     },
     "scripts": {

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { CustomTreeItem, createTreeItem } from "../models/customTreeItem";
-import { Todo, readAndParseTodos } from "../models/todo";
+import { Todo, getAllTodos } from "../models/todo";
 
 /**
  * Tree data provider for displaying todos in the sidebar tree view.
@@ -20,7 +20,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
     constructor() {
         // Subscribe to changes in the JSON data and trigger a refresh
         vscode.workspace.onDidChangeConfiguration(() => {
-            this.refresh();
+            this.refresh(true);
         });
         this.refresh(true);
     }
@@ -30,9 +30,14 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
      * @param hideNotification - Flag to hide the refresh notification.
      */
     refresh(hideNotification?: boolean): void {
-        readAndParseTodos()
+        this.todos = [];
+        getAllTodos()
             .then((todos) => {
-                this.todos = todos;
+                todos.forEach((todo) => {
+                    if (!todo.done) {
+                        this.todos?.push(todo);
+                    }
+                });
                 this._onDidChangeTreeData.fire();
                 if (!hideNotification) {
                     vscode.window.showInformationMessage("Todos refreshed.");
@@ -69,7 +74,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                     return Promise.resolve(this.getFollowUpItems(currentTreeItem));
                 }
             }
-            const newItem = createTreeItem("No data available", "", vscode.TreeItemCollapsibleState.None);
+            const newItem = createTreeItem("Nothing to do :)", "", vscode.TreeItemCollapsibleState.None);
             newItem.contextValue = "noData";
             return Promise.resolve([newItem]);
         }
@@ -84,11 +89,16 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
         let treeItems: CustomTreeItem[] = [];
         if (this.todos) {
             this.todos.map((item: Todo) => {
-                if (!item.done) {
-                    const newItem = createTreeItem(item.text, "", vscode.TreeItemCollapsibleState.None);
-                    newItem.contextValue = "todo";
-                    treeItems.push(newItem);
-                }
+                const newItem = createTreeItem(
+                    item.text,
+                    "",
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    item.text,
+                    item.done
+                );
+                newItem.contextValue = "todo";
+                treeItems.push(newItem);
             });
         }
         return treeItems;
@@ -100,16 +110,6 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
      * @returns An array of tree items for the follow-up level.
      */
     private getFollowUpItems(currentTreeItem: CustomTreeItem): CustomTreeItem[] {
-        let treeItems: CustomTreeItem[] = [];
-        if (this.todos) {
-            this.todos.map((item: Todo) => {
-                if (item.done) {
-                    const newItem = createTreeItem(item.text, "", vscode.TreeItemCollapsibleState.None);
-                    newItem.contextValue = "todo";
-                    treeItems.push(newItem);
-                }
-            });
-        }
-        return treeItems;
+        return [];
     }
 }

@@ -1,26 +1,18 @@
 import * as vscode from "vscode";
-import { CreateTodoWebviewProvider } from "./providers/createTodoWebviewProvider";
-import { ShowTodosWebviewProvider } from "./providers/showTodosWebviewProvider";
 import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
-import { createTodo, updateTodo } from "./models/todo";
+import {
+    createTodo,
+    deleteAllDoneTodos,
+    deleteAllTodos,
+    deleteTodo,
+    editTodo,
+    setTodoDone,
+    setTodoNotDone,
+} from "./models/todo";
 import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
 
 export function activate(context: vscode.ExtensionContext) {
-    context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(
-            ShowTodosWebviewProvider.viewType,
-            new ShowTodosWebviewProvider(context.extensionUri)
-        )
-    );
-
-    context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(
-            CreateTodoWebviewProvider.viewType,
-            new CreateTodoWebviewProvider(context.extensionUri)
-        )
-    );
-
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.createTodo", () => {
             createTodo();
@@ -28,8 +20,38 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.editTodo", (todo: CustomTreeItem) => {
+            editTodo(todo);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteTodo", (todo: CustomTreeItem) => {
+            deleteTodo(todo);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteAllTodos", () => {
+            deleteAllTodos();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteAllDoneTodos", () => {
+            deleteAllDoneTodos();
+        })
+    );
+
+    context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.setTodoDone", (todo: CustomTreeItem) => {
-            updateTodo(todo);
+            setTodoDone(todo);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoNotDone", (todo: CustomTreeItem) => {
+            setTodoNotDone(todo);
         })
     );
 
