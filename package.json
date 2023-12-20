@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
@@ -10,7 +10,7 @@
     },
     "pricing": "Free",
     "license": "SEE LICENSE IN LICENSE.txt",
-    "publisher": "Terry's Tools",
+    "publisher": "terrys-tools",
     "author": {
         "name": "MaruTerry"
     },

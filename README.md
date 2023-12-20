@@ -6,5 +6,5 @@ To learn more about Terry's Tools [visit my marketplace page](https://marketplac
 
 ## Features
 
--   Create a new todo.
--   Manage existing todos.
+-   Create a new todo (strg + shift + T).
+-   Manage existing todos in the side panel by right clicking them.
