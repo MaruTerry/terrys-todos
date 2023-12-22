@@ -91,7 +91,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
             this.todos.map((item: Todo) => {
                 const newItem = createTreeItem(
                     item.text,
-                    "",
+                    item.assignee,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     item.text,

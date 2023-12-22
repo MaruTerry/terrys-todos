@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
 import {
+    assignTodo,
     createTodo,
     deleteAllDoneTodos,
-    deleteAllTodos,
+    deleteAllNotDoneTodos,
     deleteTodo,
     editTodo,
     setTodoDone,
@@ -32,8 +33,14 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.deleteAllTodos", () => {
-            deleteAllTodos();
+        vscode.commands.registerCommand("terrys-todos.assignTodo", (todo: CustomTreeItem) => {
+            assignTodo(todo);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteAllNotDoneTodos", () => {
+            deleteAllNotDoneTodos();
         })
     );
 

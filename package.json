@@ -56,7 +56,11 @@
                 "title": "Delete"
             },
             {
-                "command": "terrys-todos.deleteAllTodos",
+                "command": "terrys-todos.assignTodo",
+                "title": "Assign"
+            },
+            {
+                "command": "terrys-todos.deleteAllNotDoneTodos",
                 "title": "Delete All",
                 "icon": "resources/trash.svg"
             },
@@ -97,7 +101,7 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "terrys-todos.deleteAllTodos",
+                    "command": "terrys-todos.deleteAllNotDoneTodos",
                     "when": "view == todos-tree",
                     "group": "navigation"
                 },
@@ -133,6 +137,10 @@
                 {
                     "command": "terrys-todos.deleteTodo",
                     "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                },
+                {
+                    "command": "terrys-todos.assignTodo",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
                 }
             ]
         },
@@ -148,16 +156,7 @@
             "properties": {
                 "terrys-todos.todos": {
                     "type": "array",
-                    "default": [
-                        [
-                            "This is todo number 1",
-                            "false"
-                        ],
-                        [
-                            "This is todo number 2",
-                            "true"
-                        ]
-                    ],
+                    "default": [],
                     "items": {
                         "type": "string",
                         "items": {
