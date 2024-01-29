@@ -145,14 +145,23 @@ export async function adjustSubPath(treeItem: CustomTreeItem) {
     let textOfTodoToEdit = treeItem.text;
     let subPath = await vscode.window.showInputBox({
         value: treeItem.subPath,
-        prompt: 'Adjust the sub path. Enter "/" to clear the sub path',
+        prompt: "Adjust the sub path (for example '/Folder_1/Folder_2'). Enter '/' to clear the sub path",
     });
     if (todos && textOfTodoToEdit && subPath) {
-        let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
-        if (indexOfTodoToEdit !== undefined) {
-            todos[indexOfTodoToEdit][3] = subPath;
-            await updateTodosInWorkspace(todos);
+        if (subPath.startsWith("/")) {
+            let subPathArrayWithoutFirstEntry = subPath.split("/");
+            subPathArrayWithoutFirstEntry.splice(0, 1);
+            console.log(subPathArrayWithoutFirstEntry);
+            if (!subPathArrayWithoutFirstEntry.includes("") || subPathArrayWithoutFirstEntry.length === 1) {
+                let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
+                if (indexOfTodoToEdit !== undefined) {
+                    todos[indexOfTodoToEdit][3] = subPath;
+                    await updateTodosInWorkspace(todos);
+                    return;
+                }
+            }
         }
+        vscode.window.showErrorMessage("Invalid sub path");
     }
 }
 
@@ -163,9 +172,9 @@ export async function deleteAllNotDoneTodos() {
     let currentTodos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
     let newTodos: string[][] = [];
     let confirmation = await vscode.window.showInputBox({
-        prompt: "Are you sure to delete all todos? Please type 'yes' to confirm",
+        prompt: "Are you sure to delete all todos? Please type 'DELETE' to confirm",
     });
-    if (confirmation === "yes") {
+    if (confirmation === "DELETE") {
         if (currentTodos) {
             currentTodos.forEach((arrayTodo) => {
                 if (arrayTodo[1] === "true") {
