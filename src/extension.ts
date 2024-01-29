@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
 import {
-    assignTodo,
+    adjustSubPath,
     createTodo,
     deleteAllDoneTodos,
     deleteAllNotDoneTodos,
@@ -12,6 +12,7 @@ import {
 } from "./models/todo";
 import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
+import { createFolder, deleteFolder, renameFolder } from "./models/folder";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -33,8 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.assignTodo", (todo: CustomTreeItem) => {
-            assignTodo(todo);
+        vscode.commands.registerCommand("terrys-todos.adjustSubPath", (todo: CustomTreeItem) => {
+            adjustSubPath(todo);
         })
     );
 
@@ -62,23 +63,55 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.renameFolder", (folder: CustomTreeItem) => {
+            renameFolder(folder);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteFolder", (folder: CustomTreeItem) => {
+            deleteFolder(folder);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.toggleDates", async () => {
+            if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
+                await vscode.workspace
+                    .getConfiguration()
+                    .update("terrys-todos.showDates", false, vscode.ConfigurationTarget.Workspace);
+            } else {
+                await vscode.workspace
+                    .getConfiguration()
+                    .update("terrys-todos.showDates", true, vscode.ConfigurationTarget.Workspace);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.createFolder", () => {
+            createFolder();
+        })
+    );
+
     const todosTreeDataProvider = new TodosTreeDataProvider();
 
     context.subscriptions.push(vscode.window.registerTreeDataProvider("todos-tree", todosTreeDataProvider));
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
-            todosTreeDataProvider.refresh();
-        })
-    );
+    todosTreeDataProvider.onDidChangeTreeData
 
     const doneTodosTreeDataProvider = new DoneTodosTreeDataProvider();
 
     context.subscriptions.push(vscode.window.registerTreeDataProvider("done-todos-tree", doneTodosTreeDataProvider));
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.refreshDoneTodos", () => {
-            doneTodosTreeDataProvider.refresh();
+        vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
+            todosTreeDataProvider.refresh(true).then(() => {
+                doneTodosTreeDataProvider.refresh(true).then(() => {
+                    vscode.window.showInformationMessage("Todos refreshed");
+                });
+            });
         })
     );
 }

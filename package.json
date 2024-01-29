@@ -31,12 +31,7 @@
             },
             {
                 "command": "terrys-todos.refreshTodos",
-                "title": "Refresh Todos",
-                "icon": "resources/refresh.svg"
-            },
-            {
-                "command": "terrys-todos.refreshDoneTodos",
-                "title": "Refresh Done Todos",
+                "title": "Refresh",
                 "icon": "resources/refresh.svg"
             },
             {
@@ -56,8 +51,8 @@
                 "title": "Delete"
             },
             {
-                "command": "terrys-todos.assignTodo",
-                "title": "Assign"
+                "command": "terrys-todos.adjustSubPath",
+                "title": "Adjust sub path"
             },
             {
                 "command": "terrys-todos.deleteAllNotDoneTodos",
@@ -68,6 +63,23 @@
                 "command": "terrys-todos.deleteAllDoneTodos",
                 "title": "Delete All",
                 "icon": "resources/trash.svg"
+            },
+            {
+                "command": "terrys-todos.toggleDates",
+                "title": "Toggle Dates"
+            },
+            {
+                "command": "terrys-todos.createFolder",
+                "title": "Create Folder",
+                "icon": "resources/new-folder.svg"
+            },
+            {
+                "command": "terrys-todos.renameFolder",
+                "title": "Rename"
+            },
+            {
+                "command": "terrys-todos.deleteFolder",
+                "title": "Delete"
             }
         ],
         "viewsContainers": {
@@ -101,24 +113,23 @@
                     "group": "navigation"
                 },
                 {
+                    "command": "terrys-todos.createFolder",
+                    "when": "view == todos-tree || view == done-todos-tree",
+                    "group": "navigation"
+                },
+                {
+                    "command": "terrys-todos.refreshTodos"
+                },
+                {
                     "command": "terrys-todos.deleteAllNotDoneTodos",
-                    "when": "view == todos-tree",
-                    "group": "navigation"
-                },
-                {
-                    "command": "terrys-todos.refreshTodos",
-                    "when": "view == todos-tree",
-                    "group": "navigation"
-                },
-                {
-                    "command": "terrys-todos.refreshDoneTodos",
-                    "when": "view == done-todos-tree",
-                    "group": "navigation"
+                    "when": "view == todos-tree"
                 },
                 {
                     "command": "terrys-todos.deleteAllDoneTodos",
-                    "when": "view == done-todos-tree",
-                    "group": "navigation"
+                    "when": "view == done-todos-tree"
+                },
+                {
+                    "command": "terrys-todos.toggleDates"
                 }
             ],
             "view/item/context": [
@@ -139,8 +150,16 @@
                     "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
                 },
                 {
-                    "command": "terrys-todos.assignTodo",
+                    "command": "terrys-todos.adjustSubPath",
                     "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                },
+                {
+                    "command": "terrys-todos.renameFolder",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)"
+                },
+                {
+                    "command": "terrys-todos.deleteFolder",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)"
                 }
             ]
         },
@@ -164,6 +183,21 @@
                         }
                     },
                     "description": "All todos handled by Terry's Todos"
+                },
+                "terrys-todos.folders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "description": "All folders that organize the todos"
+                },
+                "terrys-todos.showDates": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Booolean to toggle the dates shown as descriptions"
                 }
             }
         }

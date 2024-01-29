@@ -8,6 +8,7 @@ export interface CustomTreeItem extends vscode.TreeItem {
     level?: string;
     text?: string;
     done?: boolean;
+    subPath?: string;
 }
 
 /**
@@ -19,6 +20,7 @@ export interface CustomTreeItem extends vscode.TreeItem {
  * @param level - The level property for the tree item.
  * @param text - The text of a todo.
  * @param done - The state of a todo.
+ * @param subPath - The sub path of a todo.
  * @returns A CustomTreeItem with the specified properties.
  */
 export function createTreeItem(
@@ -27,7 +29,8 @@ export function createTreeItem(
     collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed,
     level?: string,
     text?: string,
-    done?: boolean
+    done?: boolean,
+    subPath?: string
 ): CustomTreeItem {
     const treeItem = new vscode.TreeItem(label, collapsibleState) as CustomTreeItem;
     treeItem.description = description;
@@ -35,5 +38,6 @@ export function createTreeItem(
     treeItem.level = level;
     treeItem.text = text;
     treeItem.done = done;
+    treeItem.subPath = subPath;
     return treeItem;
 }

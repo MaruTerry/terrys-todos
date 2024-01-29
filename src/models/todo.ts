@@ -1,14 +1,26 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from "vscode";
 import { CustomTreeItem } from "./customTreeItem";
 
 /**
- * Interface representing a Todo, containing a text string, done boolean and assingee string.
+ * Interface representing a Todo, containing a text string, done boolean, date string and a subPath string.
  */
 export interface Todo {
     text: string;
     done: boolean;
-    assignee: string;
+    date: string;
+    subPath: string;
+}
+
+/**
+ * Returns true if dates should be shown otherwise false.
+ *
+ * @returns A boolean for a boolean
+ */
+export async function showDates(): Promise<boolean> {
+    if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -24,10 +36,10 @@ export async function getAllTodos(): Promise<Todo[]> {
             todos.push({
                 text: arrayTodo[0],
                 done: arrayTodo[1] === "true" ? true : false,
-                assignee: arrayTodo[2],
+                date: arrayTodo[2],
+                subPath: arrayTodo[3],
             });
         });
-        return todos;
     }
     return todos;
 }
@@ -71,7 +83,13 @@ export async function createTodo() {
     let text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
     let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
     if (text && todos) {
-        todos.push([text, "false", ""]);
+        const currentDate = new Date();
+        todos.push([
+            text,
+            "false",
+            `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
+            "/",
+        ]);
         await updateTodosInWorkspace(todos);
     }
 }
@@ -84,11 +102,15 @@ export async function createTodo() {
 export async function editTodo(treeItem: CustomTreeItem) {
     let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
     let textOfTodoToEdit = treeItem.text;
-    let newText = await vscode.window.showInputBox({ prompt: "Enter the new todo" });
+    let newText = await vscode.window.showInputBox({ value: treeItem.label?.toString(), prompt: "Edit the todo" });
     if (todos && textOfTodoToEdit && newText) {
         let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
         if (indexOfTodoToEdit !== undefined) {
+            const currentDate = new Date();
             todos[indexOfTodoToEdit][0] = newText;
+            todos[indexOfTodoToEdit][2] = `${currentDate.getDate()}.${
+                currentDate.getMonth() + 1
+            }.${currentDate.getFullYear()}`;
             await updateTodosInWorkspace(todos);
         }
     }
@@ -114,26 +136,22 @@ export async function deleteTodo(treeItem: CustomTreeItem) {
 }
 
 /**
- * Assignes a todo.
+ * Adjusts the sub path of a todo.
  *
- * @param treeItem - The CustomTreeItem representing the todo to be assigned.
+ * @param treeItem - The CustomTreeItem representing the todo to be adjusted.
  */
-export async function assignTodo(treeItem: CustomTreeItem) {
+export async function adjustSubPath(treeItem: CustomTreeItem) {
     let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let textOfTodoToAssign = treeItem.text;
-    let assignee = await vscode.window.showInputBox({
-        prompt: 'Enter the name of the assignee. Type "none" to unassign the todo',
+    let textOfTodoToEdit = treeItem.text;
+    let subPath = await vscode.window.showInputBox({
+        value: treeItem.subPath,
+        prompt: 'Adjust the sub path. Enter "/" to clear the sub path',
     });
-    if (todos && textOfTodoToAssign && assignee) {
-        let indexOfTodoToAssing = await getIndexOfTodo(textOfTodoToAssign);
-        if (indexOfTodoToAssing !== undefined) {
-            if (assignee === "none") {
-                todos[indexOfTodoToAssing][2] = "";
-                await updateTodosInWorkspace(todos);
-            } else {
-                todos[indexOfTodoToAssing][2] = assignee;
-                await updateTodosInWorkspace(todos);
-            }
+    if (todos && textOfTodoToEdit && subPath) {
+        let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
+        if (indexOfTodoToEdit !== undefined) {
+            todos[indexOfTodoToEdit][3] = subPath;
+            await updateTodosInWorkspace(todos);
         }
     }
 }
