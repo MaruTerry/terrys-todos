@@ -12,66 +12,85 @@ import {
 } from "./models/todo";
 import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
+import { isWorkspaceOpened } from "./util/workspaceChecker";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.createTodo", () => {
-            createTodo();
+            if (isWorkspaceOpened()) {
+                createTodo();
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.editTodo", (todo: CustomTreeItem) => {
-            editTodo(todo);
+            if (isWorkspaceOpened()) {
+                editTodo(todo);
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteTodo", (todo: CustomTreeItem) => {
-            deleteTodo(todo);
+            if (isWorkspaceOpened()) {
+                deleteTodo(todo);
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.adjustSubPath", (todo: CustomTreeItem) => {
-            adjustSubPath(todo);
+            if (isWorkspaceOpened()) {
+                adjustSubPath(todo);
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteAllNotDoneTodos", () => {
-            deleteAllNotDoneTodos();
+            if (isWorkspaceOpened()) {
+                deleteAllNotDoneTodos();
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteAllDoneTodos", () => {
-            deleteAllDoneTodos();
+            if (isWorkspaceOpened()) {
+                deleteAllDoneTodos();
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.setTodoDone", (todo: CustomTreeItem) => {
-            setTodoDone(todo);
+            if (isWorkspaceOpened()) {
+                setTodoDone(todo);
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.setTodoNotDone", (todo: CustomTreeItem) => {
-            setTodoNotDone(todo);
+            if (isWorkspaceOpened()) {
+                setTodoNotDone(todo);
+            }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.toggleDates", async () => {
-            if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
-                await vscode.workspace
-                    .getConfiguration()
-                    .update("terrys-todos.showDates", false, vscode.ConfigurationTarget.Workspace);
-            } else {
-                await vscode.workspace
-                    .getConfiguration()
-                    .update("terrys-todos.showDates", true, vscode.ConfigurationTarget.Workspace);
+            if (isWorkspaceOpened()) {
+                if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
+                    await vscode.workspace
+                        .getConfiguration()
+                        .update("terrys-todos.showDates", false, vscode.ConfigurationTarget.Workspace);
+                } else {
+                    await vscode.workspace
+                        .getConfiguration()
+                        .update("terrys-todos.showDates", true, vscode.ConfigurationTarget.Workspace);
+                }
             }
         })
     );
@@ -88,11 +107,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
-            todosTreeDataProvider.refresh(true).then(() => {
-                doneTodosTreeDataProvider.refresh(true).then(() => {
-                    vscode.window.showInformationMessage("Todos refreshed");
+            if (isWorkspaceOpened()) {
+                todosTreeDataProvider.refresh(true).then(() => {
+                    doneTodosTreeDataProvider.refresh(true).then(() => {
+                        vscode.window.showInformationMessage("Todos refreshed");
+                    });
                 });
-            });
+            }
         })
     );
 }

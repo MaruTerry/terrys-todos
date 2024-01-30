@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
@@ -117,23 +117,28 @@
             "view/item/context": [
                 {
                     "command": "terrys-todos.setTodoDone",
-                    "when": "view == todos-tree && viewItem === todo"
+                    "when": "view == todos-tree && viewItem === todo",
+                    "group": "1"
                 },
                 {
                     "command": "terrys-todos.setTodoNotDone",
-                    "when": "view == done-todos-tree && viewItem === doneTodo"
+                    "when": "view == done-todos-tree && viewItem === doneTodo",
+                    "group": "1"
                 },
                 {
                     "command": "terrys-todos.editTodo",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "2"
                 },
                 {
                     "command": "terrys-todos.deleteTodo",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "2"
                 },
                 {
                     "command": "terrys-todos.adjustSubPath",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)"
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "3"
                 }
             ]
         },

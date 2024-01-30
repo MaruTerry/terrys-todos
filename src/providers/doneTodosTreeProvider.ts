@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { CustomTreeItem, createTreeItem } from "../models/customTreeItem";
 import { Todo, getAllTodos, showDates } from "../models/todo";
+import * as path from "path";
 
 /**
  * Tree data provider for displaying done todos in the sidebar tree view.
@@ -112,7 +113,7 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
                         item.done,
                         item.subPath
                     );
-                    newItem.iconPath = "C:/Users/Marius/..privateProjects/terrys-todos/resources/circle.svg";
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
                     newItem.contextValue = "doneTodo";
                     treeItems.push(newItem);
                 } else if (!this.createdFolders.includes(baseFolderLabel)) {
@@ -152,7 +153,7 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
                             item.done,
                             item.subPath
                         );
-                        newItem.iconPath = "C:/Users/Marius/..privateProjects/terrys-todos/resources/circle.svg";
+                        newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
                         newItem.contextValue = "doneTodo";
                         treeItems.push(newItem);
                     } else if (tmpSubPaths.includes(currentTreeItem.label.toString())) {
