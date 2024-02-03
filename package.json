@@ -100,7 +100,8 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "terrys-todos.refreshTodos"
+                    "command": "terrys-todos.refreshTodos",
+                    "when": "view == todos-tree || view == done-todos-tree"
                 },
                 {
                     "command": "terrys-todos.deleteAllNotDoneTodos",
@@ -111,7 +112,8 @@
                     "when": "view == done-todos-tree"
                 },
                 {
-                    "command": "terrys-todos.toggleDates"
+                    "command": "terrys-todos.toggleDates",
+                    "when": "view == todos-tree || view == done-todos-tree"
                 }
             ],
             "view/item/context": [
