@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
@@ -147,8 +147,8 @@
         "keybindings": [
             {
                 "command": "terrys-todos.createTodo",
-                "key": "ctrl+shift+t",
-                "mac": "cmd+shift+t"
+                "key": "ctrl+alt+t",
+                "mac": "cmd+alt+t"
             }
         ],
         "configuration": {
