@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { CustomTreeItem, createTreeItem } from "../models/customTreeItem";
+import { CustomTreeItem } from "../models/customTreeItem";
 import { Todo, getAllTodos, showDates } from "../models/todo";
 import * as path from "path";
+import { Folder, getAllFolders } from "../models/folder";
 
 /**
  * Tree data provider for displaying done todos in the sidebar tree view.
@@ -13,7 +14,8 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
     readonly onDidChangeTreeData: vscode.Event<CustomTreeItem | undefined | void> = this._onDidChangeTreeData.event;
 
     private todos: Todo[] | undefined = [];
-    private createdFolders: string[] = [];
+    private folders: Folder[] | undefined = [];
+    private createdItems: string[] = [];
     private showDates: boolean = false;
 
     /**
@@ -36,7 +38,7 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
      */
     async refresh(hideNotification?: boolean): Promise<void> {
         this.todos = [];
-        this.createdFolders.length = 0;
+        this.createdItems.length = 0;
         this.showDates = await showDates();
         await getAllTodos()
             .then((todos) => {
@@ -48,6 +50,13 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
             })
             .catch(() => {
                 this.todos = undefined;
+            });
+        await getAllFolders()
+            .then((folders) => {
+                this.folders = folders;
+            })
+            .catch(() => {
+                this.folders = undefined;
             });
         if (!hideNotification) {
             vscode.window.showInformationMessage("Todos refreshed");
@@ -75,14 +84,15 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
         if (this.todos) {
             if (this.todos.length > 0) {
                 if (!currentTreeItem) {
-                    // Root level, show todos and "done" folder
                     return Promise.resolve(this.getBaseItems());
                 } else {
-                    // follow up items, show done todos
                     return Promise.resolve(this.getFollowUpItems(currentTreeItem));
                 }
             }
-            const newItem = createTreeItem("Nothing done ._.", "", vscode.TreeItemCollapsibleState.None);
+            const newItem = new vscode.TreeItem(
+                "Nothing to do :)",
+                vscode.TreeItemCollapsibleState.None
+            ) as CustomTreeItem;
             newItem.contextValue = "noData";
             return Promise.resolve([newItem]);
         }
@@ -96,31 +106,41 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
      */
     private getBaseItems(): CustomTreeItem[] {
         let treeItems: CustomTreeItem[] = [];
+        if (this.folders) {
+            // create base folders
+            this.folders.map((folder: Folder) => {
+                if (folder.superiorFolderLabel === "") {
+                    const newItem = new vscode.TreeItem(
+                        folder.label,
+                        vscode.TreeItemCollapsibleState.Collapsed
+                    ) as CustomTreeItem;
+                    newItem.superiorFolderLabel = "";
+                    newItem.contextValue = "folder";
+                    this.createdItems.push(folder.label);
+                    treeItems.push(newItem);
+                }
+            });
+        }
         if (this.todos) {
+            // create base todos
             this.todos.map((item: Todo) => {
-                let baseFolderLabel = item.subPath.split("/")[1];
-                // if it has no subPaths it looks like this. "["/"]"
-                if (item.subPath.length === 1) {
+                if (item.superiorFolderLabel === "") {
                     if (!this.showDates) {
                         item.date = "";
                     }
-                    const newItem = createTreeItem(
+                    const newItem = new vscode.TreeItem(
                         item.text,
-                        item.date,
-                        vscode.TreeItemCollapsibleState.None,
-                        undefined,
-                        item.text,
-                        item.done,
-                        item.subPath
-                    );
+                        vscode.TreeItemCollapsibleState.None
+                    ) as CustomTreeItem;
+                    newItem.description = item.date;
+                    newItem.text = item.text;
+                    newItem.done = item.done;
+                    newItem.superiorFolderLabel = "";
+                    newItem.description = item.date;
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
-                    newItem.contextValue = "doneTodo";
+                    newItem.contextValue = "todo";
+                    this.createdItems.push(item.text);
                     treeItems.push(newItem);
-                } else if (!this.createdFolders.includes(baseFolderLabel)) {
-                    const newFolder = createTreeItem(baseFolderLabel, "", vscode.TreeItemCollapsibleState.Collapsed);
-                    newFolder.contextValue = "folder";
-                    this.createdFolders.push(baseFolderLabel);
-                    treeItems.push(newFolder);
                 }
             });
         }
@@ -135,33 +155,42 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
      */
     private getFollowUpItems(currentTreeItem: CustomTreeItem): CustomTreeItem[] {
         let treeItems: CustomTreeItem[] = [];
-        if (this.todos) {
-            this.todos.map((item: Todo) => {
-                if (currentTreeItem.label) {
-                    let tmpSubPaths: string[] = item.subPath.split("/");
-                    // example: ["", "Folder_1", "Folder_2"]
-                    if (currentTreeItem.label === tmpSubPaths[tmpSubPaths.length - 1]) {
-                        if (!this.showDates) {
-                            item.date = "";
-                        }
-                        const newItem = createTreeItem(
-                            item.text,
-                            item.date,
-                            vscode.TreeItemCollapsibleState.None,
-                            undefined,
-                            item.text,
-                            item.done,
-                            item.subPath
-                        );
-                        newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
-                        newItem.contextValue = "doneTodo";
-                        treeItems.push(newItem);
-                    } else if (tmpSubPaths.includes(currentTreeItem.label.toString())) {
-                        const folderLabel = tmpSubPaths[tmpSubPaths.indexOf(currentTreeItem.label.toString()) + 1];
-                        const newFolder = createTreeItem(folderLabel, "", vscode.TreeItemCollapsibleState.Collapsed);
+        if (this.folders) {
+            this.folders.map((folder: Folder) => {
+                if (currentTreeItem.label !== undefined && currentTreeItem.superiorFolderLabel !== undefined) {
+                    if (folder.superiorFolderLabel === currentTreeItem.label.toString()) {
+                        const newFolder = new vscode.TreeItem(
+                            folder.label,
+                            vscode.TreeItemCollapsibleState.Collapsed
+                        ) as CustomTreeItem;
+                        newFolder.superiorFolderLabel = folder.superiorFolderLabel;
                         newFolder.contextValue = "folder";
-                        this.createdFolders.push(folderLabel);
+                        this.createdItems.push(folder.label);
                         treeItems.push(newFolder);
+                    }
+                }
+            });
+        }
+        if (this.todos) {
+            this.todos.map((todo: Todo) => {
+                if (currentTreeItem.label !== undefined && currentTreeItem.superiorFolderLabel !== undefined) {
+                    if (todo.superiorFolderLabel === currentTreeItem.label.toString()) {
+                        if (!this.showDates) {
+                            todo.date = "";
+                        }
+                        const newItem = new vscode.TreeItem(
+                            todo.text,
+                            vscode.TreeItemCollapsibleState.None
+                        ) as CustomTreeItem;
+                        newItem.description = todo.date;
+                        newItem.text = todo.text;
+                        newItem.done = todo.done;
+                        newItem.superiorFolderLabel = todo.superiorFolderLabel;
+                        newItem.description = todo.date;
+                        newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
+                        newItem.contextValue = "todo";
+                        this.createdItems.push(todo.text);
+                        treeItems.push(newItem);
                     }
                 }
             });

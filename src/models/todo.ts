@@ -2,19 +2,20 @@ import * as vscode from "vscode";
 import { CustomTreeItem } from "./customTreeItem";
 
 /**
- * Interface representing a Todo, containing a text string, done boolean, date string and a subPath string.
+ * Interface representing a Todo, containing a text string, done boolean, date string and a superiorFolderLabel string.
  */
 export interface Todo {
+    type: "Todo";
+    id: string;
     text: string;
     done: boolean;
     date: string;
-    subPath: string;
 }
 
 /**
  * Returns true if dates should be shown otherwise false.
  *
- * @returns A boolean for a boolean
+ * @returns A boolean for a boolean.
  */
 export async function showDates(): Promise<boolean> {
     if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
@@ -26,7 +27,7 @@ export async function showDates(): Promise<boolean> {
 /**
  * Returns all existing todos.
  *
- * @returns A promise for an array of todos
+ * @returns A promise for an array of todos.
  */
 export async function getAllTodos(): Promise<Todo[]> {
     let todos: Todo[] = [];
@@ -37,7 +38,7 @@ export async function getAllTodos(): Promise<Todo[]> {
                 text: arrayTodo[0],
                 done: arrayTodo[1] === "true" ? true : false,
                 date: arrayTodo[2],
-                subPath: arrayTodo[3],
+                superiorFolderLabel: arrayTodo[3],
             });
         });
     }
@@ -47,8 +48,8 @@ export async function getAllTodos(): Promise<Todo[]> {
 /**
  * Returns the index of the first todo that matched the given string.
  *
- * @param todoText - The todo as a string
- * @returns A the index as a number or undefined if no matches were found
+ * @param todoText - The todo as a string.
+ * @returns A the index as a number or undefined if no matches were found.
  */
 export async function getIndexOfTodo(todoText: string): Promise<number | undefined> {
     let index = undefined;
@@ -66,7 +67,7 @@ export async function getIndexOfTodo(todoText: string): Promise<number | undefin
 /**
  * Updates all todos in the workspace.
  *
- * @param todoText - The new todos
+ * @param newTodos - The new todos.
  */
 export async function updateTodosInWorkspace(newTodos: string[][]) {
     await vscode.workspace
@@ -76,8 +77,6 @@ export async function updateTodosInWorkspace(newTodos: string[][]) {
 
 /**
  * Creates a todo.
- *
- * @param treeItem - The CustomTreeItem representing the todo to be created
  */
 export async function createTodo() {
     let text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
@@ -88,7 +87,7 @@ export async function createTodo() {
             text,
             "false",
             `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
-            "/",
+            "",
         ]);
         await updateTodosInWorkspace(todos);
     }
@@ -136,32 +135,32 @@ export async function deleteTodo(treeItem: CustomTreeItem) {
 }
 
 /**
- * Adjusts the sub path of a todo.
+ * Adjusts the folder label which contains the todo.
  *
  * @param treeItem - The CustomTreeItem representing the todo to be adjusted.
+ * @param superiorFolderLabel - The label of the folder containing the todo. If undefined there will be an input box.
  */
-export async function adjustSubPath(treeItem: CustomTreeItem) {
+export async function adjustSuperiorFolderLabel(treeItem: CustomTreeItem, superiorFolderLabel?: string) {
     let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
     let textOfTodoToEdit = treeItem.text;
-    let subPath = await vscode.window.showInputBox({
-        value: treeItem.subPath,
-        prompt: "Adjust the sub path (for example '/Folder_1/Folder_2'). Enter '/' to clear the sub path",
-    });
-    if (todos && textOfTodoToEdit && subPath) {
-        if (subPath.startsWith("/")) {
-            let subPathArrayWithoutFirstEntry = subPath.split("/");
-            subPathArrayWithoutFirstEntry.splice(0, 1);
-            console.log(subPathArrayWithoutFirstEntry);
-            if (!subPathArrayWithoutFirstEntry.includes("") || subPathArrayWithoutFirstEntry.length === 1) {
-                let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
-                if (indexOfTodoToEdit !== undefined) {
-                    todos[indexOfTodoToEdit][3] = subPath;
-                    await updateTodosInWorkspace(todos);
-                    return;
-                }
-            }
+    if (superiorFolderLabel === undefined) {
+        superiorFolderLabel = await vscode.window.showInputBox({
+            value: treeItem.superiorFolderLabel,
+            prompt: "Adjust the folder. Enter 'none' to clear the folder label",
+        });
+        if (superiorFolderLabel === "none") {
+            superiorFolderLabel = "";
         }
-        vscode.window.showErrorMessage("Invalid sub path");
+    }
+    if (todos !== undefined && textOfTodoToEdit !== undefined && superiorFolderLabel !== undefined) {
+        let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
+        if (indexOfTodoToEdit !== undefined) {
+            todos[indexOfTodoToEdit][3] = superiorFolderLabel;
+            await updateTodosInWorkspace(todos);
+            return;
+        } else {
+            vscode.window.showErrorMessage("Could not find related todo. Try refreshing your todos");
+        }
     }
 }
 

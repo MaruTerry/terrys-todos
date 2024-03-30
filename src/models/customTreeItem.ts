@@ -1,43 +1,38 @@
 import * as vscode from "vscode";
+import { Todo } from "./todo";
+import { Folder } from "./folder";
 
 /**
  * Custom interface extending vscode.TreeItem to include additional properties.
  */
 export interface CustomTreeItem extends vscode.TreeItem {
     description?: string | boolean;
-    level?: string;
     text?: string;
     done?: boolean;
-    subPath?: string;
+    superiorFolderLabel?: string;
 }
 
 /**
- * Creates a custom tree item with specified properties.
+ * Returns all existing todos and folders.
  *
- * @param label - The label for the tree item.
- * @param description - The description for the tree item.
- * @param collapsibleState - The collapsible state for the tree item.
- * @param level - The level property for the tree item.
- * @param text - The text of a todo.
- * @param done - The state of a todo.
- * @param subPath - The sub path of a todo.
- * @returns A CustomTreeItem with the specified properties.
+ * @returns A promise for an array of todos and folders.
  */
-export function createTreeItem(
-    label: string,
-    description: string,
-    collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed,
-    level?: string,
-    text?: string,
-    done?: boolean,
-    subPath?: string
-): CustomTreeItem {
-    const treeItem = new vscode.TreeItem(label, collapsibleState) as CustomTreeItem;
-    treeItem.description = description;
-    treeItem.contextValue = level ? level : "detail";
-    treeItem.level = level;
-    treeItem.text = text;
-    treeItem.done = done;
-    treeItem.subPath = subPath;
-    return treeItem;
+export async function getAllData(): Promise<(Todo | Folder)[]> {
+    const data: (Todo | Folder)[] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.data");
+    console.log(data);
+    if (data) {
+        return data;
+    }
+    return [];
+}
+
+/**
+ * Updates all todos and folders in the workspace.
+ *
+ * @param newData - The new data.
+ */
+export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
+    await vscode.workspace
+        .getConfiguration()
+        .update("terrys-todos.data", newData, vscode.ConfigurationTarget.Workspace);
 }

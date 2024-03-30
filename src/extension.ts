@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
 import {
-    adjustSubPath,
+    adjustSuperiorFolderLabel,
     createTodo,
     deleteAllDoneTodos,
     deleteAllNotDoneTodos,
@@ -13,6 +13,8 @@ import {
 import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
 import { isWorkspaceOpened } from "./util/workspaceChecker";
+import { TodosDragAndDropController } from "./controllers/todosDragAndDropController";
+import { createFolder } from "./models/folder";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -42,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.adjustSubPath", (todo: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                adjustSubPath(todo);
+                adjustSuperiorFolderLabel(todo);
             }
         })
     );
@@ -96,10 +98,15 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     const todosTreeDataProvider = new TodosTreeDataProvider();
+    const todosDragAndDropController = new TodosDragAndDropController(todosTreeDataProvider);
 
-    context.subscriptions.push(vscode.window.registerTreeDataProvider("todos-tree", todosTreeDataProvider));
-
-    todosTreeDataProvider.onDidChangeTreeData;
+    context.subscriptions.push(
+        vscode.window.createTreeView("todos-tree", {
+            treeDataProvider: todosTreeDataProvider,
+            showCollapseAll: true,
+            dragAndDropController: todosDragAndDropController,
+        })
+    );
 
     const doneTodosTreeDataProvider = new DoneTodosTreeDataProvider();
 
@@ -113,6 +120,14 @@ export function activate(context: vscode.ExtensionContext) {
                         vscode.window.showInformationMessage("Todos refreshed");
                     });
                 });
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.createBaseFolder", () => {
+            if (isWorkspaceOpened()) {
+                createFolder("");
             }
         })
     );

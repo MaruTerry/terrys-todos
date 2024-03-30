@@ -67,6 +67,11 @@
             {
                 "command": "terrys-todos.toggleDates",
                 "title": "Toggle Dates"
+            },
+            {
+                "command": "terrys-todos.createBaseFolder",
+                "title": "Create Folder",
+                "icon": "resources/add.svg"
             }
         ],
         "viewsContainers": {
@@ -114,6 +119,11 @@
                 {
                     "command": "terrys-todos.toggleDates",
                     "when": "view == todos-tree || view == done-todos-tree"
+                },
+                {
+                    "command": "terrys-todos.createBaseFolder",
+                    "when": "view == todos-tree",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -158,12 +168,31 @@
                     "type": "array",
                     "default": [],
                     "items": {
-                        "type": "string",
+                        "type": "array",
                         "items": {
                             "type": "string"
                         }
                     },
                     "description": "All todos handled by Terry's Todos"
+                },
+                "terrys-todos.folders": {
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "description": "All folders handled by Terry's Todos"
+                },
+                "terrys-todos.data": {
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "object"
+                    },
+                    "description": "All data handled by Terry's Todos"
                 },
                 "terrys-todos.showDates": {
                     "type": "boolean",
