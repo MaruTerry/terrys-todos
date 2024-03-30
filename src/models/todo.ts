@@ -1,8 +1,10 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "./customTreeItem";
+import { CustomTreeItem, getAllData, updateDataInWorkspace } from "./customTreeItem";
+import { Folder, deleteEmptyFolders } from "./folder";
+import { getNonce } from "../util/getNonce";
 
 /**
- * Interface representing a Todo, containing a text string, done boolean, date string and a superiorFolderLabel string.
+ * Interface representing a Todo, containing the type "Todo", an id string, a text string, a done boolean and a date string.
  */
 export interface Todo {
     type: "Todo";
@@ -25,71 +27,67 @@ export async function showDates(): Promise<boolean> {
 }
 
 /**
- * Returns all existing todos.
+ * Gets a todo defined by the given id from the given data.
  *
- * @returns A promise for an array of todos.
+ * @param id - The id of the todo to find.
+ * @param data - The data to find the todo in.
+ * @returns A promise that resolves into the needed todo or undefined if no matching id was found.
  */
-export async function getAllTodos(): Promise<Todo[]> {
-    let todos: Todo[] = [];
-    const todosAsArrays: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    if (todosAsArrays) {
-        todosAsArrays.forEach((arrayTodo) => {
-            todos.push({
-                text: arrayTodo[0],
-                done: arrayTodo[1] === "true" ? true : false,
-                date: arrayTodo[2],
-                superiorFolderLabel: arrayTodo[3],
-            });
-        });
-    }
-    return todos;
-}
-
-/**
- * Returns the index of the first todo that matched the given string.
- *
- * @param todoText - The todo as a string.
- * @returns A the index as a number or undefined if no matches were found.
- */
-export async function getIndexOfTodo(todoText: string): Promise<number | undefined> {
-    let index = undefined;
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    if (todos) {
-        todos.forEach((arrayTodo) => {
-            if (arrayTodo[0] === todoText) {
-                index = todos?.indexOf(arrayTodo);
+export async function getTodoById(id: string, data: (Todo | Folder)[]): Promise<Todo | undefined> {
+    for (const item of data) {
+        if (item.type === "Todo" && item.id === id) {
+            return item as Todo;
+        }
+        if (item.type === "Folder") {
+            const todo = findTodoInFolder(item, id);
+            if (todo) {
+                return todo;
             }
-        });
+        }
     }
-    return index;
+    return undefined;
 }
 
 /**
- * Updates all todos in the workspace.
+ * Helper function to recursively search for a todo within a folder.
  *
- * @param newTodos - The new todos.
+ * @param folder - The folder to search within.
+ * @param id - The id of the todo to find.
+ * @returns The todo if found, otherwise undefined.
  */
-export async function updateTodosInWorkspace(newTodos: string[][]) {
-    await vscode.workspace
-        .getConfiguration()
-        .update("terrys-todos.todos", newTodos, vscode.ConfigurationTarget.Workspace);
+function findTodoInFolder(folder: Folder, id: string): Todo | undefined {
+    for (const todo of folder.todos) {
+        if (todo.id === id) {
+            return todo;
+        }
+    }
+    // Recursively search within subfolders
+    for (const subfolder of folder.folders) {
+        const foundTodo = findTodoInFolder(subfolder, id);
+        if (foundTodo) {
+            return foundTodo;
+        }
+    }
+    return undefined;
 }
 
 /**
  * Creates a todo.
  */
 export async function createTodo() {
+    let data: (Todo | Folder)[] = await getAllData();
     let text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    if (text && todos) {
+    if (text && data) {
         const currentDate = new Date();
-        todos.push([
-            text,
-            "false",
-            `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
-            "",
-        ]);
-        await updateTodosInWorkspace(todos);
+        const newTodo: Todo = {
+            type: "Todo",
+            id: getNonce(),
+            text: text,
+            done: false,
+            date: `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
+        };
+        data.push(newTodo);
+        await updateDataInWorkspace(data);
     }
 }
 
@@ -99,108 +97,100 @@ export async function createTodo() {
  * @param treeItem - The CustomTreeItem representing the todo to be edited.
  */
 export async function editTodo(treeItem: CustomTreeItem) {
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let textOfTodoToEdit = treeItem.text;
+    let data: (Todo | Folder)[] = await getAllData();
     let newText = await vscode.window.showInputBox({ value: treeItem.label?.toString(), prompt: "Edit the todo" });
-    if (todos && textOfTodoToEdit && newText) {
-        let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
-        if (indexOfTodoToEdit !== undefined) {
+    if (data && newText && treeItem.id) {
+        let todoToEdit = await getTodoById(treeItem.id, data);
+        if (todoToEdit !== undefined) {
             const currentDate = new Date();
-            todos[indexOfTodoToEdit][0] = newText;
-            todos[indexOfTodoToEdit][2] = `${currentDate.getDate()}.${
-                currentDate.getMonth() + 1
-            }.${currentDate.getFullYear()}`;
-            await updateTodosInWorkspace(todos);
+            todoToEdit.text = newText;
+            todoToEdit.date = `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`;
+            await updateDataInWorkspace(data);
         }
     }
 }
 
 /**
- * Deletes a todo.
+ * Deletes a todo defined by the given id.
  *
- * @param treeItem - The CustomTreeItem representing the todo to be deleted.
+ * @param id - The id of the todo to delete.
+ * @returns A promise that resolves when the todo is deleted.
  */
-export async function deleteTodo(treeItem: CustomTreeItem) {
-    let textOfTodoToDelete = treeItem.text;
-    let currentTodos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    if (textOfTodoToDelete && currentTodos) {
-        let newTodos: string[][] = [];
-        currentTodos.forEach((arrayTodo) => {
-            if (arrayTodo[0] !== textOfTodoToDelete) {
-                newTodos.push(arrayTodo);
-            }
-        });
-        await updateTodosInWorkspace(newTodos);
-    }
-}
-
-/**
- * Adjusts the folder label which contains the todo.
- *
- * @param treeItem - The CustomTreeItem representing the todo to be adjusted.
- * @param superiorFolderLabel - The label of the folder containing the todo. If undefined there will be an input box.
- */
-export async function adjustSuperiorFolderLabel(treeItem: CustomTreeItem, superiorFolderLabel?: string) {
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let textOfTodoToEdit = treeItem.text;
-    if (superiorFolderLabel === undefined) {
-        superiorFolderLabel = await vscode.window.showInputBox({
-            value: treeItem.superiorFolderLabel,
-            prompt: "Adjust the folder. Enter 'none' to clear the folder label",
-        });
-        if (superiorFolderLabel === "none") {
-            superiorFolderLabel = "";
-        }
-    }
-    if (todos !== undefined && textOfTodoToEdit !== undefined && superiorFolderLabel !== undefined) {
-        let indexOfTodoToEdit = await getIndexOfTodo(textOfTodoToEdit);
-        if (indexOfTodoToEdit !== undefined) {
-            todos[indexOfTodoToEdit][3] = superiorFolderLabel;
-            await updateTodosInWorkspace(todos);
+export async function deleteTodoById(id: string): Promise<void> {
+    let data: (Todo | Folder)[] = await getAllData();
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        if (item.type === "Todo" && item.id === id) {
+            data.splice(i, 1);
+            await updateDataInWorkspace(data);
             return;
-        } else {
-            vscode.window.showErrorMessage("Could not find related todo. Try refreshing your todos");
+        }
+        if (item.type === "Folder") {
+            if (removeTodoFromFolder(item, id)) {
+                await updateDataInWorkspace(data);
+                return;
+            }
         }
     }
+}
+
+/**
+ * Helper function to recursively search for and remove a todo within a folder.
+ *
+ * @param folder - The folder to search within.
+ * @param id - The id of the todo to remove.
+ * @returns True if the todo was removed, otherwise false.
+ */
+function removeTodoFromFolder(folder: Folder, id: string): boolean {
+    for (let i = 0; i < folder.todos.length; i++) {
+        if (folder.todos[i].id === id) {
+            // Remove the todo from the folder's todos
+            folder.todos.splice(i, 1);
+            return true;
+        }
+    }
+    for (const subfolder of folder.folders) {
+        if (removeTodoFromFolder(subfolder, id)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
  * Deletes all not done todos.
  */
-export async function deleteAllNotDoneTodos() {
-    let currentTodos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let newTodos: string[][] = [];
-    let confirmation = await vscode.window.showInputBox({
-        prompt: "Are you sure to delete all todos? Please type 'DELETE' to confirm",
-    });
-    if (confirmation === "DELETE") {
-        if (currentTodos) {
-            currentTodos.forEach((arrayTodo) => {
-                if (arrayTodo[1] === "true") {
-                    newTodos.push(arrayTodo);
-                }
-            });
-            await updateTodosInWorkspace(newTodos);
+export async function deleteAllNotDoneTodos(): Promise<void> {
+    let data: (Todo | Folder)[] = await getAllData();
+    data = data.filter((item) => {
+        if (item.type === "Todo" && !item.done) {
+            return false;
+        } else if (item.type === "Folder") {
+            item.todos = item.todos.filter((todo) => !todo.done);
+            return item.todos.length > 0 || item.folders.length > 0;
         }
-    } else {
-        vscode.window.showInformationMessage("Process canceled");
-    }
+        return true;
+    });
+    await updateDataInWorkspace(data);
+    deleteEmptyFolders();
 }
 
 /**
  * Deletes all done todos.
  */
-export async function deleteAllDoneTodos() {
-    let currentTodos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let newTodos: string[][] = [];
-    if (currentTodos) {
-        currentTodos.forEach((arrayTodo) => {
-            if (arrayTodo[1] === "false") {
-                newTodos.push(arrayTodo);
-            }
-        });
-        await updateTodosInWorkspace(newTodos);
-    }
+export async function deleteAllDoneTodos(): Promise<void> {
+    let data: (Todo | Folder)[] = await getAllData();
+    data = data.filter((item) => {
+        if (item.type === "Todo" && item.done) {
+            return false;
+        } else if (item.type === "Folder") {
+            item.todos = item.todos.filter((todo) => !todo.done);
+            return item.todos.length > 0 || item.folders.length > 0;
+        }
+        return true;
+    });
+    await updateDataInWorkspace(data);
+    deleteEmptyFolders();
 }
 
 /**
@@ -209,14 +199,13 @@ export async function deleteAllDoneTodos() {
  * @param treeItem - The CustomTreeItem representing the todo to be updated.
  */
 export async function setTodoDone(treeItem: CustomTreeItem) {
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let textOfTodoToUpdate = treeItem.text;
-    if (todos && textOfTodoToUpdate) {
-        let indexOfTodoToUpdate = await getIndexOfTodo(textOfTodoToUpdate);
-        if (indexOfTodoToUpdate !== undefined) {
-            todos[indexOfTodoToUpdate][1] = "true";
+    let data: (Todo | Folder)[] = await getAllData();
+    if (data && treeItem.id) {
+        let todoToEdit = await getTodoById(treeItem.id, data);
+        if (todoToEdit !== undefined) {
+            todoToEdit.done = true;
+            await updateDataInWorkspace(data);
         }
-        await updateTodosInWorkspace(todos);
     }
 }
 
@@ -226,13 +215,12 @@ export async function setTodoDone(treeItem: CustomTreeItem) {
  * @param treeItem - The CustomTreeItem representing the todo to be updated.
  */
 export async function setTodoNotDone(treeItem: CustomTreeItem) {
-    let todos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    let textOfTodoToUpdate = treeItem.text;
-    if (todos && textOfTodoToUpdate) {
-        let indexOfTodoToUpdate = await getIndexOfTodo(textOfTodoToUpdate);
-        if (indexOfTodoToUpdate !== undefined) {
-            todos[indexOfTodoToUpdate][1] = "false";
+    let data: (Todo | Folder)[] = await getAllData();
+    if (data && treeItem.id) {
+        let todoToEdit = await getTodoById(treeItem.id, data);
+        if (todoToEdit !== undefined) {
+            todoToEdit.done = false;
+            await updateDataInWorkspace(data);
         }
-        await updateTodosInWorkspace(todos);
     }
 }

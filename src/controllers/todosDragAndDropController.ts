@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { CustomTreeItem } from "../models/customTreeItem";
 import { TodosTreeDataProvider } from "../providers/todosTreeProvider";
-import { adjustSuperiorFolderLabel } from "../models/todo";
 
 /**
  * Controller for handling drag and drop features of todos in the sidebar tree view.
@@ -36,6 +35,11 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
     ): void | Thenable<void> {
         if (dataTransfer.get("item/todo")?.value !== "" && dataTransfer.get("item/todo")?.value !== undefined) {
             this.handleTodoDrop(target, dataTransfer.get("item/todo")?.value);
+        } else if (
+            dataTransfer.get("folder/todo")?.value !== "" &&
+            dataTransfer.get("folder/todo")?.value !== undefined
+        ) {
+            this.handleFolderDrop(target, dataTransfer.get("folder/todo")?.value);
         }
     }
 
@@ -47,18 +51,21 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
      */
     handleTodoDrop(target: CustomTreeItem | undefined, droppedTodo: CustomTreeItem) {
         if (target !== undefined) {
-            let newSuperiorFolderLabel = "";
-            if (target.superiorFolderLabel !== undefined && target.label !== undefined) {
-                newSuperiorFolderLabel =
-                    target.contextValue === "folder"
-                        ? target.label.toString()
-                        : target.contextValue === "todo"
-                        ? target.superiorFolderLabel
-                        : "";
+            if (target.contextValue === "folder") {
+                // TODO
             }
-            adjustSuperiorFolderLabel(droppedTodo, newSuperiorFolderLabel);
         } else {
-            adjustSuperiorFolderLabel(droppedTodo, "");
+            // TODO
         }
+    }
+
+    /**
+     * Handles the drop of a folder.
+     *
+     * @param target - The target tree element that the drop is occurring on. When undefined, the target is the root.
+     * @param droppedFolder - The dropped todo represented as a CustomTreeItem.
+     */
+    handleFolderDrop(target: CustomTreeItem | undefined, droppedFolder: CustomTreeItem) {
+        // TODO
     }
 }

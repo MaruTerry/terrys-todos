@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import { TodosTreeDataProvider } from "./providers/todosTreeProvider";
 import {
-    adjustSuperiorFolderLabel,
     createTodo,
     deleteAllDoneTodos,
     deleteAllNotDoneTodos,
-    deleteTodo,
+    deleteTodoById,
     editTodo,
     setTodoDone,
     setTodoNotDone,
@@ -14,7 +13,7 @@ import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
 import { isWorkspaceOpened } from "./util/workspaceChecker";
 import { TodosDragAndDropController } from "./controllers/todosDragAndDropController";
-import { createFolder } from "./models/folder";
+import { createBaseFolder, createFolder, deleteFolderById, editFolderLabel } from "./models/folder";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -36,15 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteTodo", (todo: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                deleteTodo(todo);
-            }
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.adjustSubPath", (todo: CustomTreeItem) => {
-            if (isWorkspaceOpened()) {
-                adjustSuperiorFolderLabel(todo);
+                if (todo.id) deleteTodoById(todo.id);
             }
         })
     );
@@ -127,7 +118,31 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.createBaseFolder", () => {
             if (isWorkspaceOpened()) {
-                createFolder("");
+                createBaseFolder();
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.createFolder", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                createFolder(treeItem);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.editFolderLabel", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                editFolderLabel(treeItem);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteFolder", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                if (treeItem.id) deleteFolderById(treeItem.id);
             }
         })
     );

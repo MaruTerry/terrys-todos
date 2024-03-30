@@ -1,70 +1,104 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "./customTreeItem";
+import { CustomTreeItem, getAllData, updateDataInWorkspace } from "./customTreeItem";
 import { Todo } from "./todo";
+import { getNonce } from "../util/getNonce";
 
 /**
- * Interface representing a Folder, containing a label string and a subPath string.
+ * Interface representing a Folder, containing the type "Folder", an id string, a label string, a folders array and a todos array.
  */
 export interface Folder {
     type: "Folder";
     id: string;
     label: string;
-    folder: Folder[];
+    folders: Folder[];
     todos: Todo[];
 }
 
 /**
- * Returns all existing folders.
+ * Gets a folder defined by the given id from the given data.
  *
- * @returns A promise for an array of folders.
+ * @param id - The id of the folder to find.
+ * @param data - The data to find the folder in.
+ * @returns A promise that resolves into the needed folder or undefined if no matching id was found.
  */
-export async function getAllFolders(): Promise<Folder[]> {
-    let folders: Folder[] = [];
-    const dataStructure: (Todo | Folder)[] | undefined = await vscode.workspace
-        .getConfiguration()
-        .get("terrys-todos.data");
-    console.log(dataStructure);
-    if (dataStructure) {
-        dataStructure.forEach((object) => {
-            if (object.type === "Folder") folders.push(object as Folder);
-        });
-    }
-    return folders;
-}
-
-/**
- * Returns the index of the first folder that matched the given string.
- *
- * @param folderLabel - The folder as a string.
- * @returns A the index as a number or undefined if no matches were found.
- */
-export async function getIndexOfFolder(folderLabel: string): Promise<number | undefined> {
-    let index = undefined;
-    let folders: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.folders");
-    if (folders) {
-        folders.forEach((folderAsArray) => {
-            if (folderAsArray[0] === folderLabel) {
-                index = folders?.indexOf(folderAsArray);
+export async function getFolderById(id: string, data: (Todo | Folder)[]): Promise<Folder | undefined> {
+    for (const item of data) {
+        if (item.type === "Folder" && item.id === id) {
+            return item as Folder;
+        }
+        if (item.type === "Folder") {
+            const folder = findFolderInFolder(item, id);
+            if (folder) {
+                return folder;
             }
-        });
+        }
     }
-    return index;
+    return undefined;
 }
 
 /**
- * Creates a folder.
+ * Helper function to recursively search for a folder within a folder.
  *
- * @param superiorFolderLabel - The label of the folder containing the folder to create.
+ * @param folder - The folder to search within.
+ * @param id - The id of the folder to find.
+ * @returns The folder if found, otherwise undefined.
  */
-export async function createFolder(superiorFolderLabel: string) {
-    let label = await vscode.window.showInputBox({ prompt: "Enter the folder label" });
-    let folders = await getAllFolders();
-    if (label && folders) {
-        folders.push({
-            label: label,
-            superiorFolderLabel: superiorFolderLabel,
-        });
-        await updateFoldersInWorkspace(folders);
+function findFolderInFolder(folder: Folder, id: string): Folder | undefined {
+    for (const tmpFolder of folder.folders) {
+        if (tmpFolder.id === id) {
+            return tmpFolder;
+        }
+    }
+    // Recursively search within subfolders
+    for (const subfolder of folder.folders) {
+        const foundFolder = findFolderInFolder(subfolder, id);
+        if (foundFolder) {
+            return foundFolder;
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Creates a new folder on the base level.
+ */
+export async function createBaseFolder() {
+    let data: (Todo | Folder)[] = await getAllData();
+    let folderLabel = await vscode.window.showInputBox({ prompt: "Enter the folder label" });
+    if (folderLabel && data) {
+        const newFolder: Folder = {
+            type: "Folder",
+            id: getNonce(),
+            label: folderLabel,
+            folders: [],
+            todos: [],
+        };
+        data.push(newFolder);
+        await updateDataInWorkspace(data);
+    }
+}
+
+/**
+ * Creates a new folder on in the folder given by the id.
+ *
+ * @param treeItem - The CustomTreeItem representing the the target folder.
+ */
+export async function createFolder(treeItem: CustomTreeItem) {
+    let data: (Todo | Folder)[] = await getAllData();
+    let folderLabel = await vscode.window.showInputBox({ prompt: "Enter the folder label" });
+    if (data && folderLabel && treeItem.id) {
+        let folderToEdit = await getFolderById(treeItem.id, data);
+        if (folderToEdit !== undefined) {
+            const newFolder: Folder = {
+                type: "Folder",
+                id: getNonce(),
+                label: folderLabel,
+                folders: [],
+                todos: [],
+            };
+            folderToEdit.folders.push(newFolder);
+            await updateDataInWorkspace(data);
+        }
     }
 }
 
@@ -74,33 +108,81 @@ export async function createFolder(superiorFolderLabel: string) {
  * @param treeItem - The CustomTreeItem representing the folder to be edited.
  */
 export async function editFolderLabel(treeItem: CustomTreeItem) {
-    let folders = await getAllFolders();
-    let labelOfFolderToEdit = treeItem.label?.toString();
-    let newLabel = await vscode.window.showInputBox({ value: treeItem.label?.toString(), prompt: "Edit the todo" });
-    if (folders && labelOfFolderToEdit && newLabel) {
-        let indexOfTodoToEdit = await getIndexOfFolder(labelOfFolderToEdit);
-        if (indexOfTodoToEdit !== undefined) {
-            folders[indexOfTodoToEdit].label = newLabel;
-            await updateFoldersInWorkspace(folders);
+    let data: (Todo | Folder)[] = await getAllData();
+    let newLabel = await vscode.window.showInputBox({
+        value: treeItem.label?.toString(),
+        prompt: "Edit the folder label",
+    });
+    if (data && newLabel && treeItem.id) {
+        let folderToEdit = await getFolderById(treeItem.id, data);
+        if (folderToEdit !== undefined) {
+            folderToEdit.label = newLabel;
+            await updateDataInWorkspace(data);
         }
     }
 }
 
 /**
- * Deletes a folder including all folders and todos it contains.
+ * Deletes a folder defined by the given id.
  *
- * @param treeItem - The CustomTreeItem representing the folder to be deleted.
+ * @param id - The id of the folder to delete.
+ * @returns A promise that resolves when the folder is deleted.
  */
-export async function deleteFolder(treeItem: CustomTreeItem) {
-    let labelOfFolderToDelete = treeItem.label?.toString();
-    let currentFolders = await getAllFolders();
-    if (labelOfFolderToDelete && currentFolders) {
-        let newFolders: Folder[] = [];
-        currentFolders.forEach((folder) => {
-            if (folder.label !== labelOfFolderToDelete) {
-                newFolders.push(folder);
+export async function deleteFolderById(id: string): Promise<void> {
+    let data: (Todo | Folder)[] = await getAllData();
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        if (item.type === "Folder") {
+            if (item.id === id) {
+                data.splice(i, 1);
+                await updateDataInWorkspace(data);
+                return;
+            } else {
+                if (removeFolderRecursively(item, id)) {
+                    await updateDataInWorkspace(data);
+                    return;
+                }
             }
-        });
-        await updateFoldersInWorkspace(newFolders);
+        }
+    }
+}
+
+/**
+ * Helper function to recursively search for and remove a folder within a folder.
+ *
+ * @param folder - The folder to search within.
+ * @param id - The id of the folder to remove.
+ * @returns True if the folder was removed, otherwise false.
+ */
+function removeFolderRecursively(folder: Folder, id: string): boolean {
+    for (let i = 0; i < folder.folders.length; i++) {
+        if (folder.folders[i].id === id) {
+            // Remove the todo from the folder's todos
+            folder.folders.splice(i, 1);
+            return true;
+        }
+    }
+    for (const subfolder of folder.folders) {
+        if (removeFolderRecursively(subfolder, id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Deletes all empty folders (folders containing no folders and no todos).
+ */
+export async function deleteEmptyFolders() {
+    let data: (Todo | Folder)[] = await getAllData();
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        if (item.type === "Folder") {
+            if (item.todos.length === 0 && item.folders.length === 0) {
+                data.splice(i, 1);
+                await updateDataInWorkspace(data);
+                deleteEmptyFolders();
+            }
+        }
     }
 }

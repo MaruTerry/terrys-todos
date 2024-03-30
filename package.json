@@ -51,10 +51,6 @@
                 "title": "Delete"
             },
             {
-                "command": "terrys-todos.adjustSubPath",
-                "title": "Adjust sub path"
-            },
-            {
                 "command": "terrys-todos.deleteAllNotDoneTodos",
                 "title": "Delete All",
                 "icon": "resources/trash.svg"
@@ -72,6 +68,18 @@
                 "command": "terrys-todos.createBaseFolder",
                 "title": "Create Folder",
                 "icon": "resources/add.svg"
+            },
+            {
+                "command": "terrys-todos.createFolder",
+                "title": "Create Folder"
+            },
+            {
+                "command": "terrys-todos.editFolderLabel",
+                "title": "Edit"
+            },
+            {
+                "command": "terrys-todos.deleteFolder",
+                "title": "Delete"
             }
         ],
         "viewsContainers": {
@@ -148,9 +156,19 @@
                     "group": "2"
                 },
                 {
-                    "command": "terrys-todos.adjustSubPath",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
-                    "group": "3"
+                    "command": "terrys-todos.createFolder",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "group": "1"
+                },
+                {
+                    "command": "terrys-todos.editFolderLabel",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "group": "2"
+                },
+                {
+                    "command": "terrys-todos.deleteFolder",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "group": "2"
                 }
             ]
         },
@@ -164,28 +182,6 @@
         "configuration": {
             "title": "terrys-todos",
             "properties": {
-                "terrys-todos.todos": {
-                    "type": "array",
-                    "default": [],
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "description": "All todos handled by Terry's Todos"
-                },
-                "terrys-todos.folders": {
-                    "type": "array",
-                    "default": [],
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "description": "All folders handled by Terry's Todos"
-                },
                 "terrys-todos.data": {
                     "type": "array",
                     "default": [],
@@ -211,15 +207,15 @@
         "test": "node ./out/test/runTest.js"
     },
     "devDependencies": {
-        "@types/vscode": "^1.84.0",
         "@types/mocha": "^10.0.3",
         "@types/node": "18.x",
+        "@types/vscode": "^1.84.0",
         "@typescript-eslint/eslint-plugin": "^6.9.0",
         "@typescript-eslint/parser": "^6.9.0",
+        "@vscode/test-electron": "^2.3.6",
         "eslint": "^8.52.0",
         "glob": "^10.3.10",
         "mocha": "^10.2.0",
-        "typescript": "^5.2.2",
-        "@vscode/test-electron": "^2.3.6"
+        "typescript": "^5.2.2"
     }
 }

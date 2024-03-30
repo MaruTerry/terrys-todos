@@ -9,7 +9,8 @@ export interface CustomTreeItem extends vscode.TreeItem {
     description?: string | boolean;
     text?: string;
     done?: boolean;
-    superiorFolderLabel?: string;
+    folders?: Folder[];
+    todos?: Todo[];
 }
 
 /**
@@ -19,7 +20,6 @@ export interface CustomTreeItem extends vscode.TreeItem {
  */
 export async function getAllData(): Promise<(Todo | Folder)[]> {
     const data: (Todo | Folder)[] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.data");
-    console.log(data);
     if (data) {
         return data;
     }
