@@ -16,8 +16,11 @@ import { isWorkspaceOpened } from "./util/workspaceChecker";
 import { TodosDragAndDropController } from "./controllers/todosDragAndDropController";
 import { createBaseFolder, createFolder, deleteFolderById, editFolderLabel, setFolderDone } from "./models/folder";
 import { DoneTodosDragAndDropController } from "./controllers/doneTodosDragAndDropController";
+import { importOldTodos } from "./util/importOldTodos";
 
 export function activate(context: vscode.ExtensionContext) {
+    importOldTodos();
+
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.createTodo", () => {
             if (isWorkspaceOpened()) {
