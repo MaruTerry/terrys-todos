@@ -1,13 +1,10 @@
 import * as vscode from "vscode";
 import {
-    CustomTreeItem,
-    getAllData,
-    getAllDoneTodos,
-    updateDataInWorkspace,
-    updateDoneTodosInWorkspace,
+    CustomTreeItem
 } from "./customTreeItem";
 import { Todo, deleteTodoById, findTodoInFolder, getTodoById } from "./todo";
 import { getNonce } from "../util/getNonce";
+import { getAllData, updateDataInWorkspace, getAllDoneTodos, updateDoneTodosInWorkspace } from "../settings/workspaceProperties";
 
 /**
  * Interface representing a Folder, containing the type "Folder", an id string, a label string, a folders array and a todos array.

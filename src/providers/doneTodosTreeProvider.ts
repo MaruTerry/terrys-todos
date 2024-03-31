@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import { CustomTreeItem, getAllData, getAllDoneTodos } from "../models/customTreeItem";
+import { CustomTreeItem } from "../models/customTreeItem";
 import { Todo, showDates } from "../models/todo";
 import * as path from "path";
 import { Folder } from "../models/folder";
+import { getAllDoneTodos } from "../settings/workspaceProperties";
 
 /**
  * Tree data provider for displaying done todos in the sidebar tree view.

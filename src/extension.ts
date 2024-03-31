@@ -17,6 +17,9 @@ import { TodosDragAndDropController } from "./controllers/todosDragAndDropContro
 import { createBaseFolder, createFolder, deleteFolderById, editFolderLabel, setFolderDone } from "./models/folder";
 import { DoneTodosDragAndDropController } from "./controllers/doneTodosDragAndDropController";
 import { importOldTodos } from "./util/importOldTodos";
+import { getAllData, getSortingMode, setSortingMode, updateDataInWorkspace } from "./settings/workspaceProperties";
+import { sortTodosByDate } from "./util/sortByDate";
+import { sortTodosByColor } from "./util/sortByColor";
 
 export function activate(context: vscode.ExtensionContext) {
     importOldTodos();
@@ -94,33 +97,65 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoYellow", (treeItem: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoYellow", async (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoColor(treeItem, "yellow");
+                await setTodoColor(treeItem, "yellow");
+                const data = await getAllData();
+                const sortingMode = await getSortingMode();
+                if (sortingMode === "date") {
+                    await sortTodosByDate(data);
+                } else if (sortingMode === "color") {
+                    await sortTodosByColor(data);
+                }
+                await updateDataInWorkspace(data);
             }
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoRed", (treeItem: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoRed", async (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoColor(treeItem, "red");
+                await setTodoColor(treeItem, "red");
+                const data = await getAllData();
+                const sortingMode = await getSortingMode();
+                if (sortingMode === "date") {
+                    await sortTodosByDate(data);
+                } else if (sortingMode === "color") {
+                    await sortTodosByColor(data);
+                }
+                await updateDataInWorkspace(data);
             }
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoGreen", (treeItem: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoGreen", async (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoColor(treeItem, "green");
+                await setTodoColor(treeItem, "green");
+                const data = await getAllData();
+                const sortingMode = await getSortingMode();
+                if (sortingMode === "date") {
+                    await sortTodosByDate(data);
+                } else if (sortingMode === "color") {
+                    await sortTodosByColor(data);
+                }
+                await updateDataInWorkspace(data);
             }
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoBlue", (treeItem: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoBlue", async (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoColor(treeItem, "blue");
+                await setTodoColor(treeItem, "blue");
+                const data = await getAllData();
+                const sortingMode = await getSortingMode();
+                if (sortingMode === "date") {
+                    await sortTodosByDate(data);
+                } else if (sortingMode === "color") {
+                    await sortTodosByColor(data);
+                }
+                await updateDataInWorkspace(data);
             }
         })
     );
@@ -137,6 +172,28 @@ export function activate(context: vscode.ExtensionContext) {
                         .getConfiguration()
                         .update("terrys-todos.showDates", true, vscode.ConfigurationTarget.Workspace);
                 }
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setSortingModeDate", async () => {
+            if (isWorkspaceOpened()) {
+                await setSortingMode("date");
+                const data = await getAllData();
+                await sortTodosByDate(data);
+                await updateDataInWorkspace(data);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setSortingModeColor", async () => {
+            if (isWorkspaceOpened()) {
+                await setSortingMode("color");
+                const data = await getAllData();
+                await sortTodosByColor(data);
+                await updateDataInWorkspace(data);
             }
         })
     );

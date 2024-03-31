@@ -6,7 +6,7 @@ import {
     getAllDoneTodos,
     updateDataInWorkspace,
     updateDoneTodosInWorkspace,
-} from "../models/customTreeItem";
+} from "../settings/workspaceProperties";
 
 /**
  * Imports todos saved in the old datastructure format.

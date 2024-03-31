@@ -1,13 +1,16 @@
 import * as vscode from "vscode";
-import {
-    CustomTreeItem,
-    getAllData,
-    getAllDoneTodos,
-    updateDataInWorkspace,
-    updateDoneTodosInWorkspace,
-} from "./customTreeItem";
+import { CustomTreeItem } from "./customTreeItem";
 import { Folder, deleteEmptyFolders, getFolderById, getParentFolderById } from "./folder";
 import { getNonce } from "../util/getNonce";
+import { sortTodosByDate } from "../util/sortByDate";
+import {
+    getAllData,
+    updateDataInWorkspace,
+    getAllDoneTodos,
+    updateDoneTodosInWorkspace,
+    getSortingMode,
+} from "../settings/workspaceProperties";
+import { sortTodosByColor } from "../util/sortByColor";
 
 /**
  * Interface representing a Todo, containing the type "Todo", an id string, a text string, a done boolean and a date string.
@@ -104,6 +107,12 @@ export async function createTodo(treeItem?: CustomTreeItem) {
         } else {
             data.push(newTodo);
         }
+        const sortingMode = await getSortingMode();
+        if (sortingMode === "date") {
+            await sortTodosByDate(data);
+        } else if (sortingMode === "color") {
+            await sortTodosByColor(data);
+        }
         await updateDataInWorkspace(data);
     }
 }
@@ -119,9 +128,7 @@ export async function editTodo(treeItem: CustomTreeItem) {
     if (data && newText && treeItem.id) {
         let todoToEdit = await getTodoById(treeItem.id, data);
         if (todoToEdit !== undefined) {
-            const currentDate = new Date();
             todoToEdit.text = newText;
-            todoToEdit.date = `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`;
             await updateDataInWorkspace(data);
         }
     }
@@ -249,6 +256,7 @@ export async function setTodoNotDone(treeItem: CustomTreeItem) {
  * @param targetFolderId - The id of the folder to move the todo into.
  */
 export async function moveTodoById(todoId: string, targetFolderId?: string) {
+    console.log("MOVE");
     let data: (Todo | Folder)[] = await getAllData();
     const todoToMove = await getTodoById(todoId, data);
     const currentFolder = getParentFolderById(data, todoId);
@@ -262,6 +270,13 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
                     data = data.filter((todo) => todo.id !== todoId);
                 }
                 targetFolder.todos.push(todoToMove);
+                const sortingMode = await getSortingMode();
+                if (sortingMode === "date") {
+                    await sortTodosByDate(data);
+                } else if (sortingMode === "color") {
+                    console.log("SORT BY COLOR");
+                    await sortTodosByColor(data);
+                }
                 await updateDataInWorkspace(data);
             }
         } else {
@@ -271,6 +286,13 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
                 data = data.filter((todo) => todo.id !== todoId);
             }
             data.push(todoToMove);
+            const sortingMode = await getSortingMode();
+            if (sortingMode === "date") {
+                await sortTodosByDate(data);
+            } else if (sortingMode === "color") {
+                console.log("SORT BY COLOR");
+                await sortTodosByColor(data);
+            }
             await updateDataInWorkspace(data);
         }
     }

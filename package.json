@@ -73,6 +73,14 @@
                 "title": "Toggle Dates"
             },
             {
+                "command": "terrys-todos.setSortingModeDate",
+                "title": "Sort by Date"
+            },
+            {
+                "command": "terrys-todos.setSortingModeColor",
+                "title": "Sort by Color"
+            },
+            {
                 "command": "terrys-todos.createBaseFolder",
                 "title": "Create Folder",
                 "icon": {
@@ -154,6 +162,14 @@
                 {
                     "command": "terrys-todos.toggleDates",
                     "when": "view == todos-tree || view == done-todos-tree"
+                },
+                {
+                    "command": "terrys-todos.setSortingModeDate",
+                    "when": "view == todos-tree"
+                },
+                {
+                    "command": "terrys-todos.setSortingModeColor",
+                    "when": "view == todos-tree"
                 },
                 {
                     "command": "terrys-todos.createBaseFolder",
@@ -258,7 +274,12 @@
                 "terrys-todos.showDates": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Booolean to toggle the dates shown as descriptions"
+                    "description": "Boolean to toggle the dates shown as descriptions"
+                },
+                "terrys-todos.sortingMode": {
+                    "type": "string",
+                    "default": "date",
+                    "description": "Defines the sorting mode of the todos (either 'date' or 'color')"
                 }
             }
         }
