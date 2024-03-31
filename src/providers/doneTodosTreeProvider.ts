@@ -75,7 +75,7 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
                 return Promise.resolve(this.getFollowUpItems(currentTreeItem));
             }
         }
-        const newItem = new vscode.TreeItem("Nothing to do :)", vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
+        const newItem = new vscode.TreeItem("Nothing done ._.", vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
         newItem.contextValue = "noData";
         return Promise.resolve([newItem]);
     }
