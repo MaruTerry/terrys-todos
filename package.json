@@ -149,27 +149,33 @@
                 },
                 {
                     "command": "terrys-todos.refreshTodos",
-                    "when": "view == todos-tree || view == done-todos-tree"
+                    "when": "view == todos-tree || view == done-todos-tree",
+                    "group": "1"
                 },
                 {
                     "command": "terrys-todos.deleteAllNotDoneTodos",
-                    "when": "view == todos-tree"
+                    "when": "view == todos-tree",
+                    "group": "2"
                 },
                 {
                     "command": "terrys-todos.deleteAllDoneTodos",
-                    "when": "view == done-todos-tree"
+                    "when": "view == done-todos-tree",
+                    "group": "2"
                 },
                 {
                     "command": "terrys-todos.toggleDates",
-                    "when": "view == todos-tree || view == done-todos-tree"
+                    "when": "view == todos-tree || view == done-todos-tree",
+                    "group": "3"
                 },
                 {
                     "command": "terrys-todos.setSortingModeDate",
-                    "when": "view == todos-tree"
+                    "when": "view == todos-tree",
+                    "group": "4"
                 },
                 {
                     "command": "terrys-todos.setSortingModeColor",
-                    "when": "view == todos-tree"
+                    "when": "view == todos-tree",
+                    "group": "4"
                 },
                 {
                     "command": "terrys-todos.createBaseFolder",
