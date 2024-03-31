@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
