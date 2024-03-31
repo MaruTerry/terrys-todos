@@ -256,7 +256,6 @@ export async function setTodoNotDone(treeItem: CustomTreeItem) {
  * @param targetFolderId - The id of the folder to move the todo into.
  */
 export async function moveTodoById(todoId: string, targetFolderId?: string) {
-    console.log("MOVE");
     let data: (Todo | Folder)[] = await getAllData();
     const todoToMove = await getTodoById(todoId, data);
     const currentFolder = getParentFolderById(data, todoId);
@@ -274,7 +273,6 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
                 if (sortingMode === "date") {
                     await sortTodosByDate(data);
                 } else if (sortingMode === "color") {
-                    console.log("SORT BY COLOR");
                     await sortTodosByColor(data);
                 }
                 await updateDataInWorkspace(data);
@@ -290,7 +288,6 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
             if (sortingMode === "date") {
                 await sortTodosByDate(data);
             } else if (sortingMode === "color") {
-                console.log("SORT BY COLOR");
                 await sortTodosByColor(data);
             }
             await updateDataInWorkspace(data);
