@@ -88,22 +88,27 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
         let treeItems: CustomTreeItem[] = [];
         this.data.map((object: Todo | Folder) => {
             if (object.type === "Todo") {
-                if (object.done === false) {
-                    if (!this.showDates) {
-                        object.date = "";
-                    }
-                    const newItem = new vscode.TreeItem(
-                        object.text,
-                        vscode.TreeItemCollapsibleState.None
-                    ) as CustomTreeItem;
-                    newItem.id = object.id;
-                    newItem.description = object.date;
-                    newItem.text = object.text;
-                    newItem.done = object.done;
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
-                    newItem.contextValue = "todo";
-                    treeItems.push(newItem);
+                if (!this.showDates) {
+                    object.date = "";
                 }
+                const newItem = new vscode.TreeItem(
+                    object.text,
+                    vscode.TreeItemCollapsibleState.None
+                ) as CustomTreeItem;
+                newItem.id = object.id;
+                newItem.description = object.date;
+                newItem.text = object.text;
+                if (object.color === "blue") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
+                } else if (object.color === "yellow") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "yellow-circle.svg");
+                } else if (object.color === "red") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "red-circle.svg");
+                } else if (object.color === "green") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "green-circle.svg");
+                }
+                newItem.contextValue = "todo";
+                treeItems.push(newItem);
             } else if (object.type === "Folder") {
                 const newItem = new vscode.TreeItem(
                     object.label,
@@ -129,22 +134,24 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
         let treeItems: CustomTreeItem[] = [];
         if (currentTreeItem.todos) {
             currentTreeItem.todos.forEach((todo) => {
-                if (todo.done === false) {
-                    if (!this.showDates) {
-                        todo.date = "";
-                    }
-                    const newItem = new vscode.TreeItem(
-                        todo.text,
-                        vscode.TreeItemCollapsibleState.None
-                    ) as CustomTreeItem;
-                    newItem.id = todo.id;
-                    newItem.description = todo.date;
-                    newItem.text = todo.text;
-                    newItem.done = todo.done;
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "circle.svg");
-                    newItem.contextValue = "todo";
-                    treeItems.push(newItem);
+                if (!this.showDates) {
+                    todo.date = "";
                 }
+                const newItem = new vscode.TreeItem(todo.text, vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
+                newItem.id = todo.id;
+                newItem.description = todo.date;
+                newItem.text = todo.text;
+                if (todo.color === "blue") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
+                } else if (todo.color === "yellow") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "yellow-circle.svg");
+                } else if (todo.color === "red") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "red-circle.svg");
+                } else if (todo.color === "green") {
+                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "green-circle.svg");
+                }
+                newItem.contextValue = "todo";
+                treeItems.push(newItem);
             });
         }
         if (currentTreeItem.folders) {

@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "../models/customTreeItem";
+import { CustomTreeItem, getAllData } from "../models/customTreeItem";
 import { TodosTreeDataProvider } from "../providers/todosTreeProvider";
+import { Todo, moveTodoById, setTodoNotDone } from "../models/todo";
+import { Folder, folderContainsItem, getFolderById, getParentFolderById, moveFolderById } from "../models/folder";
 
 /**
  * Controller for handling drag and drop features of todos in the sidebar tree view.
  */
 export class TodosDragAndDropController implements vscode.TreeDragAndDropController<CustomTreeItem> {
-    dropMimeTypes: readonly string[] = ["item/todo", "item/done-todo", "folder/todo", "folder/done-todo"];
+    dropMimeTypes: readonly string[] = ["item/todo", "item/done-todo", "folder/todo"];
     dragMimeTypes: readonly string[] = ["item/todo", "folder/todo"];
 
     todosTreeDataProvider: TodosTreeDataProvider;
@@ -40,6 +42,11 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
             dataTransfer.get("folder/todo")?.value !== undefined
         ) {
             this.handleFolderDrop(target, dataTransfer.get("folder/todo")?.value);
+        } else if (
+            dataTransfer.get("item/done-todo")?.value !== "" &&
+            dataTransfer.get("item/done-todo")?.value !== undefined
+        ) {
+            this.handleDoneTodoDrop(target, JSON.parse(dataTransfer.get("item/done-todo")?.value));
         }
     }
 
@@ -49,13 +56,24 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
      * @param target - The target tree element that the drop is occurring on. When undefined, the target is the root.
      * @param droppedTodo - The dropped todo represented as a CustomTreeItem.
      */
-    handleTodoDrop(target: CustomTreeItem | undefined, droppedTodo: CustomTreeItem) {
-        if (target !== undefined) {
-            if (target.contextValue === "folder") {
-                // TODO
+    async handleTodoDrop(target: CustomTreeItem | undefined, droppedTodo: CustomTreeItem) {
+        if (droppedTodo.id) {
+            if (target !== undefined) {
+                if (target.id) {
+                    if (target.contextValue === "folder") {
+                        await moveTodoById(droppedTodo.id, target.id);
+                    } else if (target.contextValue === "todo") {
+                        const parentFolder = getParentFolderById(await getAllData(), target.id);
+                        if (parentFolder) {
+                            await moveTodoById(droppedTodo.id, parentFolder.id);
+                        } else {
+                            await moveTodoById(droppedTodo.id);
+                        }
+                    }
+                }
+            } else {
+                await moveTodoById(droppedTodo.id);
             }
-        } else {
-            // TODO
         }
     }
 
@@ -63,9 +81,60 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
      * Handles the drop of a folder.
      *
      * @param target - The target tree element that the drop is occurring on. When undefined, the target is the root.
-     * @param droppedFolder - The dropped todo represented as a CustomTreeItem.
+     * @param droppedFolderTreeItem - The dropped todo represented as a CustomTreeItem.
      */
-    handleFolderDrop(target: CustomTreeItem | undefined, droppedFolder: CustomTreeItem) {
-        // TODO
+    async handleFolderDrop(target: CustomTreeItem | undefined, droppedFolderTreeItem: CustomTreeItem) {
+        if (droppedFolderTreeItem.id) {
+            const data = await getAllData();
+            let droppedFolder = await getFolderById(droppedFolderTreeItem.id, data);
+            if (droppedFolder) {
+                if (target !== undefined) {
+                    if (target.id) {
+                        if (target.id !== droppedFolderTreeItem.id && !folderContainsItem(droppedFolder, target.id)) {
+                            if (target.contextValue === "folder") {
+                                await moveFolderById(droppedFolderTreeItem.id, target.id);
+                            } else if (target.contextValue === "todo") {
+                                const parentFolder = getParentFolderById(data, target.id);
+                                if (parentFolder) {
+                                    await moveFolderById(droppedFolderTreeItem.id, parentFolder.id);
+                                } else {
+                                    await moveFolderById(droppedFolderTreeItem.id);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    await moveFolderById(droppedFolderTreeItem.id);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles the drop of a done todo.
+     *
+     * @param target - The target tree element that the drop is occurring on. When undefined, the target is the root.
+     * @param droppedTodo - The dropped todo represented as a CustomTreeItem.
+     */
+    async handleDoneTodoDrop(target: CustomTreeItem | undefined, droppedDoneTodo: CustomTreeItem) {
+        if (droppedDoneTodo.id) {
+            await setTodoNotDone(droppedDoneTodo);
+            if (target !== undefined) {
+                if (target.id) {
+                    if (target.contextValue === "folder") {
+                        await moveTodoById(droppedDoneTodo.id, target.id);
+                    } else if (target.contextValue === "todo") {
+                        const parentFolder = getParentFolderById(await getAllData(), target.id);
+                        if (parentFolder) {
+                            await moveTodoById(droppedDoneTodo.id, parentFolder.id);
+                        } else {
+                            await moveTodoById(droppedDoneTodo.id);
+                        }
+                    }
+                }
+            } else {
+                await moveTodoById(droppedDoneTodo.id);
+            }
+        }
     }
 }

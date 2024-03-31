@@ -1,6 +1,12 @@
 import * as vscode from "vscode";
-import { CustomTreeItem, getAllData, updateDataInWorkspace } from "./customTreeItem";
-import { Folder, deleteEmptyFolders } from "./folder";
+import {
+    CustomTreeItem,
+    getAllData,
+    getAllDoneTodos,
+    updateDataInWorkspace,
+    updateDoneTodosInWorkspace,
+} from "./customTreeItem";
+import { Folder, deleteEmptyFolders, getFolderById, getParentFolderById } from "./folder";
 import { getNonce } from "../util/getNonce";
 
 /**
@@ -10,8 +16,8 @@ export interface Todo {
     type: "Todo";
     id: string;
     text: string;
-    done: boolean;
     date: string;
+    color: string;
 }
 
 /**
@@ -55,7 +61,7 @@ export async function getTodoById(id: string, data: (Todo | Folder)[]): Promise<
  * @param id - The id of the todo to find.
  * @returns The todo if found, otherwise undefined.
  */
-function findTodoInFolder(folder: Folder, id: string): Todo | undefined {
+export function findTodoInFolder(folder: Folder, id: string): Todo | undefined {
     for (const todo of folder.todos) {
         if (todo.id === id) {
             return todo;
@@ -73,20 +79,31 @@ function findTodoInFolder(folder: Folder, id: string): Todo | undefined {
 
 /**
  * Creates a todo.
+ *
+ * @param treeItem - The treeItem representing the folder to create the todo in.
  */
-export async function createTodo() {
-    let data: (Todo | Folder)[] = await getAllData();
-    let text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
+export async function createTodo(treeItem?: CustomTreeItem) {
+    const data: (Todo | Folder)[] = await getAllData();
+    const text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
     if (text && data) {
         const currentDate = new Date();
         const newTodo: Todo = {
             type: "Todo",
             id: getNonce(),
             text: text,
-            done: false,
             date: `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
+            color: "blue",
         };
-        data.push(newTodo);
+        if (treeItem !== undefined) {
+            if (treeItem.id) {
+                const folder = await getFolderById(treeItem.id, data);
+                if (folder) {
+                    folder.todos.push(newTodo);
+                }
+            }
+        } else {
+            data.push(newTodo);
+        }
         await updateDataInWorkspace(data);
     }
 }
@@ -135,6 +152,24 @@ export async function deleteTodoById(id: string): Promise<void> {
 }
 
 /**
+ * Deletes a done todo defined by the given id.
+ *
+ * @param id - The id of the done todo to delete.
+ * @returns A promise that resolves when the todo is deleted.
+ */
+export async function deleteDoneTodoById(id: string): Promise<void> {
+    let doneTodos: Todo[] = await getAllDoneTodos();
+    for (let i = 0; i < doneTodos.length; i++) {
+        const item = doneTodos[i];
+        if (item.type === "Todo" && item.id === id) {
+            doneTodos.splice(i, 1);
+            await updateDoneTodosInWorkspace(doneTodos);
+            return;
+        }
+    }
+}
+
+/**
  * Helper function to recursively search for and remove a todo within a folder.
  *
  * @param folder - The folder to search within.
@@ -161,36 +196,14 @@ function removeTodoFromFolder(folder: Folder, id: string): boolean {
  * Deletes all not done todos.
  */
 export async function deleteAllNotDoneTodos(): Promise<void> {
-    let data: (Todo | Folder)[] = await getAllData();
-    data = data.filter((item) => {
-        if (item.type === "Todo" && !item.done) {
-            return false;
-        } else if (item.type === "Folder") {
-            item.todos = item.todos.filter((todo) => !todo.done);
-            return item.todos.length > 0 || item.folders.length > 0;
-        }
-        return true;
-    });
-    await updateDataInWorkspace(data);
-    deleteEmptyFolders();
+    await updateDataInWorkspace([]);
 }
 
 /**
  * Deletes all done todos.
  */
 export async function deleteAllDoneTodos(): Promise<void> {
-    let data: (Todo | Folder)[] = await getAllData();
-    data = data.filter((item) => {
-        if (item.type === "Todo" && item.done) {
-            return false;
-        } else if (item.type === "Folder") {
-            item.todos = item.todos.filter((todo) => !todo.done);
-            return item.todos.length > 0 || item.folders.length > 0;
-        }
-        return true;
-    });
-    await updateDataInWorkspace(data);
-    deleteEmptyFolders();
+    updateDoneTodosInWorkspace([]);
 }
 
 /**
@@ -200,11 +213,13 @@ export async function deleteAllDoneTodos(): Promise<void> {
  */
 export async function setTodoDone(treeItem: CustomTreeItem) {
     let data: (Todo | Folder)[] = await getAllData();
-    if (data && treeItem.id) {
+    let doneTodos: Todo[] = await getAllDoneTodos();
+    if (data && doneTodos && treeItem.id) {
         let todoToEdit = await getTodoById(treeItem.id, data);
         if (todoToEdit !== undefined) {
-            todoToEdit.done = true;
-            await updateDataInWorkspace(data);
+            await deleteTodoById(treeItem.id);
+            doneTodos.push(todoToEdit);
+            await updateDoneTodosInWorkspace(doneTodos);
         }
     }
 }
@@ -216,11 +231,73 @@ export async function setTodoDone(treeItem: CustomTreeItem) {
  */
 export async function setTodoNotDone(treeItem: CustomTreeItem) {
     let data: (Todo | Folder)[] = await getAllData();
-    if (data && treeItem.id) {
-        let todoToEdit = await getTodoById(treeItem.id, data);
+    let doneTodos: Todo[] = await getAllDoneTodos();
+    if (data && doneTodos && treeItem.id) {
+        let todoToEdit = await getTodoById(treeItem.id, doneTodos);
         if (todoToEdit !== undefined) {
-            todoToEdit.done = false;
+            await deleteDoneTodoById(treeItem.id);
+            data.push(todoToEdit);
             await updateDataInWorkspace(data);
+        }
+    }
+}
+
+/**
+ * Moves a todo to the given folder.
+ *
+ * @param todoId - The id of the todo to move.
+ * @param targetFolderId - The id of the folder to move the todo into.
+ */
+export async function moveTodoById(todoId: string, targetFolderId?: string) {
+    let data: (Todo | Folder)[] = await getAllData();
+    const todoToMove = await getTodoById(todoId, data);
+    const currentFolder = getParentFolderById(data, todoId);
+    if (todoToMove) {
+        if (targetFolderId) {
+            const targetFolder = await getFolderById(targetFolderId, data);
+            if (targetFolder) {
+                if (currentFolder) {
+                    currentFolder.todos = currentFolder.todos.filter((todo) => todo.id !== todoId);
+                } else {
+                    data = data.filter((todo) => todo.id !== todoId);
+                }
+                targetFolder.todos.push(todoToMove);
+                await updateDataInWorkspace(data);
+            }
+        } else {
+            if (currentFolder) {
+                currentFolder.todos = currentFolder.todos.filter((todo) => todo.id !== todoId);
+            } else {
+                data = data.filter((todo) => todo.id !== todoId);
+            }
+            data.push(todoToMove);
+            await updateDataInWorkspace(data);
+        }
+    }
+}
+
+/**
+ * Sets the color of a todo.
+ *
+ * @param treeItem - The CustomTreeItem representing the todo to update.
+ * @param color - The new color.
+ */
+export async function setTodoColor(treeItem: CustomTreeItem, color: string) {
+    let data = await getAllData();
+    let doneTodos = await getAllDoneTodos();
+    if (data && doneTodos) {
+        if (treeItem.id) {
+            let todo = await getTodoById(treeItem.id, data);
+            if (todo) {
+                todo.color = color;
+                await updateDataInWorkspace(data);
+                return;
+            }
+            todo = await getTodoById(treeItem.id, doneTodos);
+            if (todo) {
+                todo.color = color;
+                await updateDoneTodosInWorkspace(doneTodos);
+            }
         }
     }
 }

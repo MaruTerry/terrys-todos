@@ -6,6 +6,7 @@ import {
     deleteAllNotDoneTodos,
     deleteTodoById,
     editTodo,
+    setTodoColor,
     setTodoDone,
     setTodoNotDone,
 } from "./models/todo";
@@ -13,7 +14,8 @@ import { CustomTreeItem } from "./models/customTreeItem";
 import { DoneTodosTreeDataProvider } from "./providers/doneTodosTreeProvider";
 import { isWorkspaceOpened } from "./util/workspaceChecker";
 import { TodosDragAndDropController } from "./controllers/todosDragAndDropController";
-import { createBaseFolder, createFolder, deleteFolderById, editFolderLabel } from "./models/folder";
+import { createBaseFolder, createFolder, deleteFolderById, editFolderLabel, setFolderDone } from "./models/folder";
+import { DoneTodosDragAndDropController } from "./controllers/doneTodosDragAndDropController";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -25,17 +27,25 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.editTodo", (todo: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.createTodoInFolder", (treeItem?: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                editTodo(todo);
+                createTodo(treeItem);
             }
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.deleteTodo", (todo: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.editTodo", (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                if (todo.id) deleteTodoById(todo.id);
+                editTodo(treeItem);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteTodo", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                if (treeItem.id) deleteTodoById(treeItem.id);
             }
         })
     );
@@ -57,17 +67,57 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoDone", (todo: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoDone", (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoDone(todo);
+                setTodoDone(treeItem);
             }
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.setTodoNotDone", (todo: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.setTodoNotDone", (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                setTodoNotDone(todo);
+                setTodoNotDone(treeItem);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setFolderDone", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                setFolderDone(treeItem);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoYellow", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                setTodoColor(treeItem, "yellow");
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoRed", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                setTodoColor(treeItem, "red");
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoGreen", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                setTodoColor(treeItem, "green");
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.setTodoBlue", (treeItem: CustomTreeItem) => {
+            if (isWorkspaceOpened()) {
+                setTodoColor(treeItem, "blue");
             }
         })
     );
@@ -100,8 +150,14 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     const doneTodosTreeDataProvider = new DoneTodosTreeDataProvider();
+    const doneTodosDragAndDropController = new DoneTodosDragAndDropController();
 
-    context.subscriptions.push(vscode.window.registerTreeDataProvider("done-todos-tree", doneTodosTreeDataProvider));
+    context.subscriptions.push(
+        vscode.window.createTreeView("done-todos-tree", {
+            treeDataProvider: doneTodosTreeDataProvider,
+            dragAndDropController: doneTodosDragAndDropController,
+        })
+    );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {

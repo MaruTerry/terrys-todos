@@ -27,20 +27,30 @@
             {
                 "command": "terrys-todos.createTodo",
                 "title": "Create Todo",
-                "icon": "resources/add.svg"
+                "icon": {
+                    "light": "resources/light/add.svg",
+                    "dark": "resources/dark/add.svg"
+                }
+            },
+            {
+                "command": "terrys-todos.createTodoInFolder",
+                "title": "Create Todo"
             },
             {
                 "command": "terrys-todos.refreshTodos",
-                "title": "Refresh",
-                "icon": "resources/refresh.svg"
+                "title": "Refresh"
             },
             {
                 "command": "terrys-todos.setTodoDone",
-                "title": "Mark as done"
+                "title": "Mark as Done"
+            },
+            {
+                "command": "terrys-todos.setFolderDone",
+                "title": "Mark All as Done"
             },
             {
                 "command": "terrys-todos.setTodoNotDone",
-                "title": "Mark as not done"
+                "title": "Mark as not Done"
             },
             {
                 "command": "terrys-todos.editTodo",
@@ -52,13 +62,11 @@
             },
             {
                 "command": "terrys-todos.deleteAllNotDoneTodos",
-                "title": "Delete All",
-                "icon": "resources/trash.svg"
+                "title": "Delete All"
             },
             {
                 "command": "terrys-todos.deleteAllDoneTodos",
-                "title": "Delete All",
-                "icon": "resources/trash.svg"
+                "title": "Delete All"
             },
             {
                 "command": "terrys-todos.toggleDates",
@@ -67,7 +75,10 @@
             {
                 "command": "terrys-todos.createBaseFolder",
                 "title": "Create Folder",
-                "icon": "resources/add.svg"
+                "icon": {
+                    "light": "resources/light/new-folder.svg",
+                    "dark": "resources/dark/new-folder.svg"
+                }
             },
             {
                 "command": "terrys-todos.createFolder",
@@ -80,6 +91,22 @@
             {
                 "command": "terrys-todos.deleteFolder",
                 "title": "Delete"
+            },
+            {
+                "command": "terrys-todos.setTodoBlue",
+                "title": "Blue"
+            },
+            {
+                "command": "terrys-todos.setTodoYellow",
+                "title": "Yellow"
+            },
+            {
+                "command": "terrys-todos.setTodoRed",
+                "title": "Red"
+            },
+            {
+                "command": "terrys-todos.setTodoGreen",
+                "title": "Green"
             }
         ],
         "viewsContainers": {
@@ -156,19 +183,49 @@
                     "group": "2"
                 },
                 {
+                    "command": "terrys-todos.setTodoBlue",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "3"
+                },
+                {
+                    "command": "terrys-todos.setTodoYellow",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "3"
+                },
+                {
+                    "command": "terrys-todos.setTodoRed",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "3"
+                },
+                {
+                    "command": "terrys-todos.setTodoGreen",
+                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "group": "3"
+                },
+                {
                     "command": "terrys-todos.createFolder",
                     "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
                     "group": "1"
                 },
                 {
-                    "command": "terrys-todos.editFolderLabel",
+                    "command": "terrys-todos.createTodoInFolder",
                     "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
                     "group": "2"
                 },
                 {
-                    "command": "terrys-todos.deleteFolder",
+                    "command": "terrys-todos.setFolderDone",
                     "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
                     "group": "2"
+                },
+                {
+                    "command": "terrys-todos.editFolderLabel",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "group": "3"
+                },
+                {
+                    "command": "terrys-todos.deleteFolder",
+                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "group": "3"
                 }
             ]
         },
@@ -188,7 +245,15 @@
                     "items": {
                         "type": "object"
                     },
-                    "description": "All data handled by Terry's Todos"
+                    "description": "All todos and folders handled by Terry's Todos"
+                },
+                "terrys-todos.done-todos": {
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "object"
+                    },
+                    "description": "All done todos handled by Terry's Todos"
                 },
                 "terrys-todos.showDates": {
                     "type": "boolean",

@@ -1,6 +1,12 @@
 import * as vscode from "vscode";
-import { CustomTreeItem, getAllData, updateDataInWorkspace } from "./customTreeItem";
-import { Todo } from "./todo";
+import {
+    CustomTreeItem,
+    getAllData,
+    getAllDoneTodos,
+    updateDataInWorkspace,
+    updateDoneTodosInWorkspace,
+} from "./customTreeItem";
+import { Todo, deleteTodoById, findTodoInFolder, getTodoById } from "./todo";
 import { getNonce } from "../util/getNonce";
 
 /**
@@ -43,7 +49,7 @@ export async function getFolderById(id: string, data: (Todo | Folder)[]): Promis
  * @param id - The id of the folder to find.
  * @returns The folder if found, otherwise undefined.
  */
-function findFolderInFolder(folder: Folder, id: string): Folder | undefined {
+export function findFolderInFolder(folder: Folder, id: string): Folder | undefined {
     for (const tmpFolder of folder.folders) {
         if (tmpFolder.id === id) {
             return tmpFolder;
@@ -57,6 +63,49 @@ function findFolderInFolder(folder: Folder, id: string): Folder | undefined {
         }
     }
     return undefined;
+}
+
+/**
+ * Gets the parent folder of a todo or folder by its id.
+ *
+ * @param data - The array of todos and folders.
+ * @param id - The id of the todo or folder whose parent folder is to be found.
+ * @returns The parent folder if found, otherwise undefined.
+ */
+export function getParentFolderById(data: (Todo | Folder)[], id: string): Folder | undefined {
+    for (const item of data) {
+        if (item.type === "Folder") {
+            let itemInFolder: Todo | Folder | undefined = item.todos.find((todo) => todo.id === id);
+            if (itemInFolder) {
+                return item;
+            }
+            itemInFolder = item.folders.find((folder) => folder.id === id);
+            if (itemInFolder) {
+                return item;
+            }
+            const parentFolder = getParentFolderById(item.folders, id);
+            if (parentFolder) {
+                return parentFolder;
+            }
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Checks if a folder contains the object with the given id.
+ *
+ * @param folder - The folder to search in.
+ * @param id - The id of the object to search.
+ * @returns True if the item was found, false otherwise.
+ */
+export function folderContainsItem(folder: Folder, id: string) {
+    const foundFolderInFolder = findFolderInFolder(folder, id);
+    const foundTodoInFolder = findTodoInFolder(folder, id);
+    if (foundTodoInFolder !== undefined || foundFolderInFolder !== undefined) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -184,5 +233,55 @@ export async function deleteEmptyFolders() {
                 deleteEmptyFolders();
             }
         }
+    }
+}
+
+/**
+ * Moves a folder into another folder.
+ *
+ * @param folderId - The id of the folder to move.
+ * @param targetFolderId - The id of the folder to move the folder into.
+ */
+export async function moveFolderById(folderId: string, targetFolderId?: string) {
+    let data: (Todo | Folder)[] = await getAllData();
+    const folderToMove = await getFolderById(folderId, data);
+    const currentFolder = getParentFolderById(data, folderId);
+    if (folderToMove) {
+        if (targetFolderId) {
+            const targetFolder = await getFolderById(targetFolderId, data);
+            if (targetFolder) {
+                if (currentFolder) {
+                    currentFolder.folders = currentFolder.folders.filter((folder) => folder.id !== folderId);
+                } else {
+                    data = data.filter((folder) => folder.id !== folderId);
+                }
+                targetFolder.folders.push(folderToMove);
+                await updateDataInWorkspace(data);
+            }
+        } else {
+            if (currentFolder) {
+                currentFolder.folders = currentFolder.folders.filter((folder) => folder.id !== folderId);
+            } else {
+                data = data.filter((folder) => folder.id !== folderId);
+            }
+            data.push(folderToMove);
+            await updateDataInWorkspace(data);
+        }
+    }
+}
+
+/**
+ * Marks all todos inside the given folder as done.
+ *
+ * @param treeItem - The CustomTreeItem representing the folder.
+ */
+export async function setFolderDone(treeItem: CustomTreeItem) {
+    let doneTodos: Todo[] = await getAllDoneTodos();
+    if (treeItem.todos && doneTodos) {
+        for (let todo of treeItem.todos) {
+            await deleteTodoById(todo.id);
+            doneTodos.push(todo);
+        }
+        await updateDoneTodosInWorkspace(doneTodos);
     }
 }

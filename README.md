@@ -8,4 +8,4 @@ To learn more about Terry's Tools [visit my marketplace page](https://marketplac
 ## Features
 
 -   Create a new todo (ctrl + alt + T).
--   Manage existing todos in the side panel by right clicking them.
+-   Manage existing todos in the side panel.
