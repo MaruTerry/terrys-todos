@@ -51,7 +51,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteTodo", (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                if (treeItem.id) deleteTodoById(treeItem.id);
+                if (treeItem.id) {
+                    deleteTodoById(treeItem.id);
+                }
             }
         })
     );
@@ -258,7 +260,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.deleteFolder", (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
-                if (treeItem.id) deleteFolderById(treeItem.id);
+                if (treeItem.id) {
+                    deleteFolderById(treeItem.id);
+                }
             }
         })
     );
