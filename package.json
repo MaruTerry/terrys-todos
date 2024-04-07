@@ -42,15 +42,27 @@
             },
             {
                 "command": "terrys-todos.setTodoDone",
-                "title": "Mark as Done"
+                "title": "Mark as Done",
+                "icon": {
+                    "light": "resources/light/check.svg",
+                    "dark": "resources/dark/check.svg"
+                }
             },
             {
                 "command": "terrys-todos.setFolderDone",
-                "title": "Mark All as Done"
+                "title": "Mark All as Done",
+                "icon": {
+                    "light": "resources/light/check-all.svg",
+                    "dark": "resources/dark/check-all.svg"
+                }
             },
             {
                 "command": "terrys-todos.setTodoNotDone",
-                "title": "Mark as not Done"
+                "title": "Mark as not Done",
+                "icon": {
+                    "light": "resources/light/redo.svg",
+                    "dark": "resources/dark/redo.svg"
+                }
             },
             {
                 "command": "terrys-todos.editTodo",
@@ -187,12 +199,12 @@
                 {
                     "command": "terrys-todos.setTodoDone",
                     "when": "view == todos-tree && viewItem === todo",
-                    "group": "1"
+                    "group": "inline"
                 },
                 {
                     "command": "terrys-todos.setTodoNotDone",
                     "when": "view == done-todos-tree && viewItem === doneTodo",
-                    "group": "1"
+                    "group": "inline"
                 },
                 {
                     "command": "terrys-todos.editTodo",
@@ -237,7 +249,7 @@
                 {
                     "command": "terrys-todos.setFolderDone",
                     "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
-                    "group": "2"
+                    "group": "inline"
                 },
                 {
                     "command": "terrys-todos.editFolderLabel",

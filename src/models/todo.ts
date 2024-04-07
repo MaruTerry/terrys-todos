@@ -42,7 +42,7 @@ export async function showDates(): Promise<boolean> {
  * @param data - The data to find the todo in.
  * @returns A promise that resolves into the needed todo or undefined if no matching id was found.
  */
-export async function getTodoById(id: string, data: (Todo | Folder)[]): Promise<Todo | undefined> {
+export function getTodoById(id: string, data: (Todo | Folder)[]): Todo | undefined {
     for (const item of data) {
         if (item.type === "Todo" && item.id === id) {
             return item as Todo;
@@ -135,43 +135,33 @@ export async function editTodo(treeItem: CustomTreeItem) {
 }
 
 /**
- * Deletes a todo defined by the given id.
+ * Deletes a todo defined by the given id from the given data.
  *
  * @param id - The id of the todo to delete.
  * @returns A promise that resolves when the todo is deleted.
  */
-export async function deleteTodoById(id: string): Promise<void> {
-    let data: (Todo | Folder)[] = await getAllData();
+export function deleteTodoById(id: string, data: (Todo | Folder)[]) {
     for (let i = 0; i < data.length; i++) {
         const item = data[i];
         if (item.type === "Todo" && item.id === id) {
             data.splice(i, 1);
-            await updateDataInWorkspace(data);
-            return;
-        }
-        if (item.type === "Folder") {
-            if (removeTodoFromFolder(item, id)) {
-                await updateDataInWorkspace(data);
-                return;
-            }
+        } else if (item.type === "Folder") {
+            removeTodoFromFolder(item, id);
         }
     }
 }
 
 /**
- * Deletes a done todo defined by the given id.
+ * Deletes a done todo defined by the given id in the given data.
  *
  * @param id - The id of the done todo to delete.
  * @returns A promise that resolves when the todo is deleted.
  */
-export async function deleteDoneTodoById(id: string): Promise<void> {
-    let doneTodos: Todo[] = await getAllDoneTodos();
-    for (let i = 0; i < doneTodos.length; i++) {
-        const item = doneTodos[i];
+export function deleteDoneTodoById(id: string, data: Todo[]) {
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
         if (item.type === "Todo" && item.id === id) {
-            doneTodos.splice(i, 1);
-            await updateDoneTodosInWorkspace(doneTodos);
-            return;
+            data.splice(i, 1);
         }
     }
 }
@@ -183,20 +173,16 @@ export async function deleteDoneTodoById(id: string): Promise<void> {
  * @param id - The id of the todo to remove.
  * @returns True if the todo was removed, otherwise false.
  */
-function removeTodoFromFolder(folder: Folder, id: string): boolean {
+function removeTodoFromFolder(folder: Folder, id: string) {
     for (let i = 0; i < folder.todos.length; i++) {
         if (folder.todos[i].id === id) {
             // Remove the todo from the folder's todos
             folder.todos.splice(i, 1);
-            return true;
         }
     }
     for (const subfolder of folder.folders) {
-        if (removeTodoFromFolder(subfolder, id)) {
-            return true;
-        }
+        removeTodoFromFolder(subfolder, id);
     }
-    return false;
 }
 
 /**
@@ -221,10 +207,11 @@ export async function deleteAllDoneTodos(): Promise<void> {
 export async function setTodoDone(treeItem: CustomTreeItem) {
     let data: (Todo | Folder)[] = await getAllData();
     let doneTodos: Todo[] = await getAllDoneTodos();
-    if (data && doneTodos && treeItem.id) {
-        let todoToEdit = await getTodoById(treeItem.id, data);
+    if (treeItem.id) {
+        let todoToEdit = getTodoById(treeItem.id, data);
         if (todoToEdit !== undefined) {
-            await deleteTodoById(treeItem.id);
+            deleteTodoById(treeItem.id, data);
+            await updateDataInWorkspace(data);
             doneTodos.push(todoToEdit);
             await updateDoneTodosInWorkspace(doneTodos);
         }
@@ -242,7 +229,8 @@ export async function setTodoNotDone(treeItem: CustomTreeItem) {
     if (data && doneTodos && treeItem.id) {
         let todoToEdit = await getTodoById(treeItem.id, doneTodos);
         if (todoToEdit !== undefined) {
-            await deleteDoneTodoById(treeItem.id);
+            deleteDoneTodoById(treeItem.id, doneTodos);
+            await updateDoneTodosInWorkspace(doneTodos);
             data.push(todoToEdit);
             await updateDataInWorkspace(data);
         }

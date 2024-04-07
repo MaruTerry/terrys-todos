@@ -49,10 +49,12 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.deleteTodo", (treeItem: CustomTreeItem) => {
+        vscode.commands.registerCommand("terrys-todos.deleteTodo", async (treeItem: CustomTreeItem) => {
             if (isWorkspaceOpened()) {
                 if (treeItem.id) {
-                    deleteTodoById(treeItem.id);
+                    let data = await getAllData();
+                    deleteTodoById(treeItem.id, data);
+                    await updateDataInWorkspace(data);
                 }
             }
         })

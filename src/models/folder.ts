@@ -276,12 +276,19 @@ export async function moveFolderById(folderId: string, targetFolderId?: string) 
  * @param treeItem - The CustomTreeItem representing the folder.
  */
 export async function setFolderDone(treeItem: CustomTreeItem) {
+    let todos: (Todo | Folder)[] = await getAllData();
     let doneTodos: Todo[] = await getAllDoneTodos();
-    if (treeItem.todos && doneTodos) {
+    if (treeItem.todos) {
         for (let todo of treeItem.todos) {
-            await deleteTodoById(todo.id);
+            deleteTodoById(todo.id, todos);
             doneTodos.push(todo);
         }
+        await updateDataInWorkspace(todos);
         await updateDoneTodosInWorkspace(doneTodos);
+    }
+    if (treeItem.folders) {
+        for (let folder of treeItem.folders) {
+            await setFolderDone(folder);
+        }
     }
 }
