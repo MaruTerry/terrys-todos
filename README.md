@@ -8,5 +8,13 @@ To learn more about Terry's Tools [visit my marketplace page](https://marketplac
 
 ## Features
 
--   Create a new todo (ctrl + alt + T).
--   Manage existing todos in the side panel.
+-   Create a new todo (ctrl + alt + T)
+
+-   Manage existing todos in the side panel
+    - Create folders
+    - Highlight todos in different colors
+    - Sort todos by date or color
+    - Use Drag and Drop features
+
+\
+**Enjoy!**
