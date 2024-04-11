@@ -35,7 +35,20 @@ To learn more about Terry's Tools [visit my marketplace page](https://marketplac
 
 ###
 
----
+## Configuration ⚙️
+
+Terry's Todos provides the following settings to customize its behavior:
+
+-   `terrys-todos.includeDoneTodosOnce`:
+
+    -   Type: `boolean`
+    -   Default: `true`
+    -   Description: Once a done todo was included in the generated commit message, it will not be included again.
+
+-   `terrys-todos.deleteIncludedTodos`:
+    -   Type: `boolean`
+    -   Default: `false`
+    -   Description: Once a done todo was included in the generated commit message, it will be permanently deleted.
 
 \
 **Enjoy!** 👏
