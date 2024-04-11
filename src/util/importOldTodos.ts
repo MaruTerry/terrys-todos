@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Todo } from "../models/todo";
+import { Todo } from "../interfaces/todo";
 import { getNonce } from "./getNonce";
 import {
     getAllData,
@@ -15,7 +15,7 @@ export async function importOldTodos() {
     let data = await getAllData();
     let doneTodos = await getAllDoneTodos();
     const oldTodos: string[][] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.todos");
-    if (oldTodos && data && doneTodos) {
+    if (oldTodos) {
         oldTodos.forEach((todoAsArray) => {
             let newTodo: Todo = {
                 type: "Todo",
@@ -23,6 +23,8 @@ export async function importOldTodos() {
                 text: todoAsArray[0],
                 date: todoAsArray[2],
                 color: "blue",
+                folderPath: [],
+                addedToCommitMessage: false,
             };
             if (todoAsArray[1] === "false") {
                 data.push(newTodo);
@@ -30,7 +32,25 @@ export async function importOldTodos() {
                 doneTodos.push(newTodo);
             }
         });
-        await updateDataInWorkspace(data);
-        await updateDoneTodosInWorkspace(doneTodos);
     }
+    data.forEach((object) => {
+        if (object.type === "Todo") {
+            if (object.folderPath === undefined) {
+                object.folderPath = [];
+            }
+            if (object.addedToCommitMessage === undefined) {
+                object.addedToCommitMessage = false;
+            }
+        }
+    });
+    doneTodos.forEach((doneTodo) => {
+        if (doneTodo.folderPath === undefined) {
+            doneTodo.folderPath = [];
+        }
+        if (doneTodo.addedToCommitMessage === undefined) {
+            doneTodo.addedToCommitMessage = false;
+        }
+    });
+    await updateDataInWorkspace(data);
+    await updateDoneTodosInWorkspace(doneTodos);
 }

@@ -1,3 +1,7 @@
+/**
+ * Generate a random string for use as a nonce.
+ * @returns {string} A random string.
+ */
 export function getNonce() {
     let text = "";
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-#";

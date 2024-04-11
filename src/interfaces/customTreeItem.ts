@@ -8,7 +8,7 @@ import { Folder } from "./folder";
 export interface CustomTreeItem extends vscode.TreeItem {
     description?: string | boolean;
     text?: string;
-    done?: boolean;
     folders?: Folder[];
     todos?: Todo[];
+    folderPath?: string[];
 }

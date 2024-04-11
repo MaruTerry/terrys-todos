@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "./customTreeItem";
-import { Todo, deleteTodoById, findTodoInFolder, getTodoById } from "./todo";
 import { getNonce } from "../util/getNonce";
 import {
     getAllData,
@@ -8,17 +6,10 @@ import {
     getAllDoneTodos,
     updateDoneTodosInWorkspace,
 } from "../settings/workspaceProperties";
-
-/**
- * Interface representing a Folder, containing the type "Folder", an id string, a label string, a folders array and a todos array.
- */
-export interface Folder {
-    type: "Folder";
-    id: string;
-    label: string;
-    folders: Folder[];
-    todos: Todo[];
-}
+import { CustomTreeItem } from "../interfaces/customTreeItem";
+import { Folder } from "../interfaces/folder";
+import { Todo } from "../interfaces/todo";
+import { findTodoInFolder, deleteTodoById, updateTodoFolderPaths } from "./todo";
 
 /**
  * Gets a folder defined by the given id from the given data.
@@ -162,10 +153,11 @@ export async function editFolderLabel(treeItem: CustomTreeItem) {
         value: treeItem.label?.toString(),
         prompt: "Edit the folder label",
     });
-    if (data && newLabel && treeItem.id) {
+    if (data && newLabel && treeItem.id && treeItem.label) {
         let folderToEdit = await getFolderById(treeItem.id, data);
         if (folderToEdit !== undefined) {
             folderToEdit.label = newLabel;
+            await updateTodoFolderPaths(data, []);
             await updateDataInWorkspace(data);
         }
     }
@@ -256,6 +248,7 @@ export async function moveFolderById(folderId: string, targetFolderId?: string) 
                     data = data.filter((folder) => folder.id !== folderId);
                 }
                 targetFolder.folders.push(folderToMove);
+                await updateTodoFolderPaths(data, []);
                 await updateDataInWorkspace(data);
             }
         } else {
@@ -265,6 +258,7 @@ export async function moveFolderById(folderId: string, targetFolderId?: string) 
                 data = data.filter((folder) => folder.id !== folderId);
             }
             data.push(folderToMove);
+            await updateTodoFolderPaths(data, []);
             await updateDataInWorkspace(data);
         }
     }

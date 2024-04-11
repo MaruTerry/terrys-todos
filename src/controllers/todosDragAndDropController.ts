@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "../models/customTreeItem";
 import { TodosTreeDataProvider } from "../providers/todosTreeProvider";
-import { Todo, moveTodoById, setTodoNotDone } from "../models/todo";
-import { Folder, folderContainsItem, getFolderById, getParentFolderById, moveFolderById } from "../models/folder";
+import { moveTodoById, setTodoNotDone } from "../logic/todo";
+import { folderContainsItem, getFolderById, getParentFolderById, moveFolderById } from "../logic/folder";
 import { getAllData } from "../settings/workspaceProperties";
+import { CustomTreeItem } from "../interfaces/customTreeItem";
 
 /**
  * Controller for handling drag and drop features of todos in the sidebar tree view.
