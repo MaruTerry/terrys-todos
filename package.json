@@ -2,7 +2,7 @@
     "name": "terrys-todos",
     "displayName": "Terry's Todos",
     "description": "An easy way to keep track of your todos",
-    "version": "3.0.3",
+    "version": "4.0.0",
     "icon": "resources/terrys-todos.png",
     "repository": {
         "type": "git",
@@ -69,6 +69,10 @@
                 "title": "Edit"
             },
             {
+                "command": "terrys-todos.editDoneTodo",
+                "title": "Edit"
+            },
+            {
                 "command": "terrys-todos.deleteTodo",
                 "title": "Delete"
             },
@@ -127,6 +131,14 @@
             {
                 "command": "terrys-todos.setTodoGreen",
                 "title": "Green"
+            },
+            {
+                "command": "terrys-todos.generateCommitMessage",
+                "title": "Generate Commit Message (Terry's Todos)",
+                "icon": {
+                    "light": "resources/light/lightbulb.svg",
+                    "dark": "resources/dark/lightbulb.svg"
+                }
             }
         ],
         "viewsContainers": {
@@ -153,6 +165,13 @@
             ]
         },
         "menus": {
+            "scm/title": [
+                {
+                    "command": "terrys-todos.generateCommitMessage",
+                    "when": "scmProvider == git",
+                    "group": "navigation"
+                }
+            ],
             "view/title": [
                 {
                     "command": "terrys-todos.createTodo",
@@ -208,7 +227,12 @@
                 },
                 {
                     "command": "terrys-todos.editTodo",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "when": "(view == todos-tree && viewItem === todo)",
+                    "group": "2"
+                },
+                {
+                    "command": "terrys-todos.editDoneTodo",
+                    "when": "(view == done-todos-tree && viewItem === doneTodo)",
                     "group": "2"
                 },
                 {
@@ -298,6 +322,16 @@
                     "type": "string",
                     "default": "date",
                     "description": "Defines the sorting mode of the todos (either 'date' or 'color')"
+                },
+                "terrys-todos.includeDoneTodosOnce": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Once a done todo was included in the generated commit message, it will not be included again"
+                },
+                "terrys-todos.deleteIncludedTodos": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Once a done todo was included in the generated commit message, it will be permanently deleted"
                 }
             }
         }

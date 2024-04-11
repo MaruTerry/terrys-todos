@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "../models/customTreeItem";
-import { setTodoDone } from "../models/todo";
-import { setFolderDone } from "../models/folder";
+import { setTodoDone } from "../logic/todo";
+import { setFolderDone } from "../logic/folder";
+import { CustomTreeItem } from "../interfaces/customTreeItem";
 
 /**
  * Controller for handling drag and drop features of done todos in the sidebar tree view.

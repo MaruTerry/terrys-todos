@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { Folder } from "../models/folder";
-import { Todo } from "../models/todo";
+import { Folder } from "../interfaces/folder";
+import { Todo } from "../interfaces/todo";
 
 /**
  * Returns all todos and folders.
@@ -70,4 +70,40 @@ export async function setSortingMode(sortingMode: string) {
             .getConfiguration()
             .update("terrys-todos.sortingMode", sortingMode, vscode.ConfigurationTarget.Workspace);
     }
+}
+
+/**
+ * Returns true if dates should be shown otherwise false.
+ *
+ * @returns A Promise that resolved into a boolean.
+ */
+export async function showDates(): Promise<boolean> {
+    if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Returns true if done todos should only be included once in the generated commit message, false otherwise.
+ *
+ * @returns A Promise that resolved into a boolean.
+ */
+export async function includeDoneTodosOnce(): Promise<boolean> {
+    if ((await vscode.workspace.getConfiguration().get("terrys-todos.includeDoneTodosOnce")) === true) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Returns true if done todos should be deleted after beeing included in the generated commit message, false otherwise.
+ *
+ * @returns A Promise that resolved into a boolean.
+ */
+export async function deleteIncludedTodos(): Promise<boolean> {
+    if ((await vscode.workspace.getConfiguration().get("terrys-todos.deleteIncludedTodos")) === true) {
+        return true;
+    }
+    return false;
 }

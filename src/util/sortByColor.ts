@@ -1,5 +1,5 @@
-import { Folder } from "../models/folder";
-import { Todo } from "../models/todo";
+import { Folder } from "../interfaces/folder";
+import { Todo } from "../interfaces/todo";
 
 /**
  * Sorts all todos by color.

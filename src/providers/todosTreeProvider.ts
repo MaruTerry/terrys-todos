@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { CustomTreeItem } from "../models/customTreeItem";
-import { Todo, showDates } from "../models/todo";
 import * as path from "path";
-import { Folder } from "../models/folder";
-import { getAllData } from "../settings/workspaceProperties";
+import { getAllData, showDates } from "../settings/workspaceProperties";
+import { CustomTreeItem } from "../interfaces/customTreeItem";
+import { Folder } from "../interfaces/folder";
+import { Todo } from "../interfaces/todo";
 
 /**
  * Tree data provider for displaying todos in the sidebar tree view.
@@ -89,15 +89,12 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
         let treeItems: CustomTreeItem[] = [];
         this.data.map((object: Todo | Folder) => {
             if (object.type === "Todo") {
-                if (!this.showDates) {
-                    object.date = "";
-                }
                 const newItem = new vscode.TreeItem(
                     object.text,
                     vscode.TreeItemCollapsibleState.None
                 ) as CustomTreeItem;
                 newItem.id = object.id;
-                newItem.description = object.date;
+                newItem.description = this.showDates ? object.date : "";
                 newItem.text = object.text;
                 if (object.color === "blue") {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
@@ -113,7 +110,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
             } else if (object.type === "Folder") {
                 const newItem = new vscode.TreeItem(
                     object.label,
-                    vscode.TreeItemCollapsibleState.Collapsed
+                    vscode.TreeItemCollapsibleState.Expanded
                 ) as CustomTreeItem;
                 newItem.id = object.id;
                 newItem.folders = object.folders;
@@ -135,12 +132,9 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
         let treeItems: CustomTreeItem[] = [];
         if (currentTreeItem.todos) {
             currentTreeItem.todos.forEach((todo) => {
-                if (!this.showDates) {
-                    todo.date = "";
-                }
                 const newItem = new vscode.TreeItem(todo.text, vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
                 newItem.id = todo.id;
-                newItem.description = todo.date;
+                newItem.description = this.showDates ? todo.date : "";
                 newItem.text = todo.text;
                 if (todo.color === "blue") {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
@@ -159,7 +153,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
             currentTreeItem.folders.forEach((folder) => {
                 const newItem = new vscode.TreeItem(
                     folder.label,
-                    vscode.TreeItemCollapsibleState.Collapsed
+                    vscode.TreeItemCollapsibleState.Expanded
                 ) as CustomTreeItem;
                 newItem.id = folder.id;
                 newItem.folders = folder.folders;
