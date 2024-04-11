@@ -17,8 +17,16 @@
     "engines": {
         "vscode": "^1.84.0"
     },
+    "keywords": [
+        "todo",
+        "todolist",
+        "task",
+        "tasklist",
+        "commit message"
+    ],
     "categories": [
-        "Other"
+        "Other",
+        "SCM Providers"
     ],
     "activationEvents": [],
     "main": "./out/extension.js",
