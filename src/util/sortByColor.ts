@@ -1,5 +1,5 @@
-import { Folder } from "../interfaces/folder";
-import { Todo } from "../interfaces/todo";
+import { TodoColor, Type } from "../interfaces/enums";
+import { Todo, Folder } from "../interfaces/interfaces";
 
 /**
  * Sorts all todos by color.
@@ -12,7 +12,7 @@ export async function sortTodosByColor(data: (Todo | Folder)[]) {
 
     // Sort todos within each folder
     data.forEach((item) => {
-        if (item.type === "Folder") {
+        if (item.type === Type.FOLDER) {
             sortFolderTodosByColor(item);
         }
     });
@@ -26,12 +26,12 @@ export async function sortTodosByColor(data: (Todo | Folder)[]) {
  * @returns The comparison result.
  */
 function compareItemsByColor(a: Todo | Folder, b: Todo | Folder): number {
-    if (a.type === "Folder" && b.type === "Folder") {
+    if (a.type === Type.FOLDER && b.type === Type.FOLDER) {
         return a.label.localeCompare(b.label); // Sort folders by label
-    } else if (a.type === "Todo" && b.type === "Todo") {
+    } else if (a.type === Type.TODO && b.type === Type.TODO) {
         return getColorIndex(a.color) - getColorIndex(b.color); // Sort todos by color
     } else {
-        return a.type === "Folder" ? -1 : 1; // Folders before todos
+        return a.type === Type.FOLDER ? -1 : 1; // Folders before todos
     }
 }
 
@@ -43,13 +43,13 @@ function compareItemsByColor(a: Todo | Folder, b: Todo | Folder): number {
  */
 function getColorIndex(color: string): number {
     switch (color) {
-        case "blue":
+        case TodoColor.BLUE:
             return 0;
-        case "green":
+        case TodoColor.GREEN:
             return 1;
-        case "red":
+        case TodoColor.YELLOW:
             return 2;
-        case "yellow":
+        case TodoColor.RED:
             return 3;
         default:
             return 4; // If color is not recognized, treat it as lowest priority

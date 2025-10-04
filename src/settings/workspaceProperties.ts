@@ -1,109 +1,86 @@
 import * as vscode from "vscode";
-import { Folder } from "../interfaces/folder";
-import { Todo } from "../interfaces/todo";
+import { Todo, Folder } from "../interfaces/interfaces";
+import { getCurrentWorkspaceFolder } from "../util/workspace";
+import { SortingMode } from "../interfaces/enums";
 
 /**
- * Returns all todos and folders.
+ * Gets the configuration value for the given key.
  *
- * @returns A promise for an array of todos and folders.
+ * @param key - The configuration key.
+ * @param defaultValue- The default value.
+ * @returns  A promise that resolves into the configuration value or the default value.
  */
-export async function getAllData(): Promise<(Todo | Folder)[]> {
-    const data: (Todo | Folder)[] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.data");
-    if (data) {
-        return data;
+async function getConfiguration<T>(key: string, defaultValue: T, boundToWorkspace: boolean = true): Promise<T> {
+    if (!boundToWorkspace) {
+        const value = await vscode.workspace.getConfiguration().get<T>("terrys-todos." + key);
+        return value === undefined || value === null ? defaultValue : (value as T);
     }
-    return [];
+    const value = await vscode.workspace.getConfiguration().get<T>("terrys-todos." + key);
+    const workspaceFolder = getCurrentWorkspaceFolder();
+    if (value === undefined || value === null || workspaceFolder === undefined) {
+        return defaultValue;
+    }
+    return value.hasOwnProperty(workspaceFolder) ? (value as Record<string, T>)[workspaceFolder] : defaultValue;
 }
 
 /**
- * Returns all done todos.
+ * Sets the configuration value for the given key.
  *
- * @returns A promise for an array of done todos.
+ * @param key - The configuration key.
+ * @param value - The value to set.
  */
-export async function getAllDoneTodos(): Promise<Todo[]> {
-    const data: Todo[] | undefined = await vscode.workspace.getConfiguration().get("terrys-todos.done-todos");
-    if (data) {
-        return data;
+async function setConfiguration<T>(key: string, value: T, bindToWorkspace: boolean = true) {
+    const valueWithWorkspace: Record<string, T> = {};
+    if (bindToWorkspace) {
+        const workspaceFolder = getCurrentWorkspaceFolder();
+        if (workspaceFolder === undefined) {
+            return;
+        }
+        valueWithWorkspace[workspaceFolder] = value;
     }
-    return [];
+    await vscode.workspace
+        .getConfiguration()
+        .update("terrys-todos." + key, bindToWorkspace ? valueWithWorkspace : value, vscode.ConfigurationTarget.Global);
+    return;
 }
 
-/**
- * Updates all todos and folders in the workspace.
- *
- * @param newData - The new data.
- */
+export async function getTodos(): Promise<(Todo | Folder)[]> {
+    return await getConfiguration<(Todo | Folder)[]>("todos", []);
+}
+
+export async function getDoneTodos(): Promise<Todo[]> {
+    return await getConfiguration<Todo[]>("done-todos", []);
+}
+
 export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
-    await vscode.workspace
-        .getConfiguration()
-        .update("terrys-todos.data", newData, vscode.ConfigurationTarget.Workspace);
+    await setConfiguration<(Todo | Folder)[]>("todos", newData);
 }
 
-/**
- * Updates all done todos and folders in the workspace.
- *
- * @param newData - The new data.
- */
 export async function updateDoneTodosInWorkspace(newData: Todo[]) {
-    await vscode.workspace
-        .getConfiguration()
-        .update("terrys-todos.done-todos", newData, vscode.ConfigurationTarget.Workspace);
+    await setConfiguration<Todo[]>("done-todos", newData);
 }
 
-/**
- * Returns the sorting type.
- *
- * @returns A promise that resolves into the sorting type ("date" or "color") or undefined if nothing was found.
- */
-export async function getSortingMode(): Promise<string | undefined> {
-    return await vscode.workspace.getConfiguration().get("terrys-todos.sortingMode");
+export async function getSortingMode(): Promise<SortingMode> {
+    return await getConfiguration<SortingMode>("sortingMode", SortingMode.COLOR, false);
 }
 
-/**
- * Updates all done todos and folders in the workspace.
- *
- * @param newData - The new sorting mode (either "date" or "color").
- */
-export async function setSortingMode(sortingMode: string) {
-    if (sortingMode === "date" || sortingMode === "color") {
-        await vscode.workspace
-            .getConfiguration()
-            .update("terrys-todos.sortingMode", sortingMode, vscode.ConfigurationTarget.Workspace);
-    }
+export async function setSortingMode(sortingMode: SortingMode) {
+    await setConfiguration<SortingMode>("sortingMode", sortingMode, false);
 }
 
-/**
- * Returns true if dates should be shown otherwise false.
- *
- * @returns A Promise that resolved into a boolean.
- */
 export async function showDates(): Promise<boolean> {
-    if ((await vscode.workspace.getConfiguration().get("terrys-todos.showDates")) === true) {
-        return true;
-    }
-    return false;
+    return await getConfiguration<boolean>("showDates", false, false);
 }
 
-/**
- * Returns true if done todos should only be included once in the generated commit message, false otherwise.
- *
- * @returns A Promise that resolved into a boolean.
- */
+export async function toggleShowDates() {
+    const currentValue = await showDates();
+    await setConfiguration<boolean>("showDates", !currentValue, false);
+}
+
 export async function includeDoneTodosOnce(): Promise<boolean> {
-    if ((await vscode.workspace.getConfiguration().get("terrys-todos.includeDoneTodosOnce")) === true) {
-        return true;
-    }
-    return false;
+    return await getConfiguration<boolean>("includeDoneTodosOnce", true, false);
 }
 
-/**
- * Returns true if done todos should be deleted after beeing included in the generated commit message, false otherwise.
- *
- * @returns A Promise that resolved into a boolean.
- */
 export async function deleteIncludedTodos(): Promise<boolean> {
-    if ((await vscode.workspace.getConfiguration().get("terrys-todos.deleteIncludedTodos")) === true) {
-        return true;
-    }
-    return false;
+    return await getConfiguration<boolean>("deleteIncludedTodos", false, false);
 }

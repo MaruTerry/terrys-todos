@@ -1,5 +1,5 @@
-import { Folder } from "../interfaces/folder";
-import { Todo } from "../interfaces/todo";
+import { Type } from "../interfaces/enums";
+import { Todo, Folder } from "../interfaces/interfaces";
 
 /**
  * Sorts all todos by date.
@@ -12,7 +12,7 @@ export async function sortTodosByDate(data: (Todo | Folder)[]) {
 
     // Sort todos within each folder
     data.forEach((item) => {
-        if (item.type === "Folder") {
+        if (item.type === Type.FOLDER) {
             sortFolderTodos(item);
         }
     });
@@ -26,14 +26,14 @@ export async function sortTodosByDate(data: (Todo | Folder)[]) {
  * @returns The comparison result.
  */
 function compareItems(a: Todo | Folder, b: Todo | Folder): number {
-    if (a.type === "Folder" && b.type === "Folder") {
+    if (a.type === Type.FOLDER && b.type === Type.FOLDER) {
         return a.label.localeCompare(b.label); // Sort folders by label
-    } else if (a.type === "Todo" && b.type === "Todo") {
+    } else if (a.type === Type.TODO && b.type === Type.TODO) {
         const dateA = parseDate(a.date);
         const dateB = parseDate(b.date);
         return dateA.getTime() - dateB.getTime(); // Sort todos by date
     } else {
-        return a.type === "Folder" ? -1 : 1; // Folders before todos
+        return a.type === Type.FOLDER ? -1 : 1; // Folders before todos
     }
 }
 

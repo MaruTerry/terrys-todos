@@ -1,9 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { getAllData, showDates } from "../settings/workspaceProperties";
-import { CustomTreeItem } from "../interfaces/customTreeItem";
-import { Folder } from "../interfaces/folder";
-import { Todo } from "../interfaces/todo";
+import { getTodos, showDates } from "../settings/workspaceProperties";
+import { CustomTreeItem, Todo, Folder } from "../interfaces/interfaces";
+import { ContextValue, TodoColor, Type } from "../interfaces/enums";
 
 /**
  * Tree data provider for displaying todos in the sidebar tree view.
@@ -38,7 +37,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
     async refresh(hideNotification?: boolean): Promise<void> {
         this.data = [];
         this.showDates = await showDates();
-        await getAllData()
+        await getTodos()
             .then((data) => {
                 this.data = data;
             })
@@ -76,7 +75,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
             }
         }
         const newItem = new vscode.TreeItem("Nothing to do :)", vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
-        newItem.contextValue = "noData";
+        newItem.contextValue = ContextValue.NODATA;
         return Promise.resolve([newItem]);
     }
 
@@ -88,7 +87,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
     private getBaseItems(): CustomTreeItem[] {
         let treeItems: CustomTreeItem[] = [];
         this.data.map((object: Todo | Folder) => {
-            if (object.type === "Todo") {
+            if (object.type === Type.TODO) {
                 const newItem = new vscode.TreeItem(
                     object.text,
                     vscode.TreeItemCollapsibleState.None
@@ -96,18 +95,18 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                 newItem.id = object.id;
                 newItem.description = this.showDates ? object.date : "";
                 newItem.text = object.text;
-                if (object.color === "blue") {
+                if (object.color === TodoColor.BLUE) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
-                } else if (object.color === "yellow") {
+                } else if (object.color === TodoColor.YELLOW) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "yellow-circle.svg");
-                } else if (object.color === "red") {
+                } else if (object.color === TodoColor.RED) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "red-circle.svg");
-                } else if (object.color === "green") {
+                } else if (object.color === TodoColor.GREEN) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "green-circle.svg");
                 }
-                newItem.contextValue = "todo";
+                newItem.contextValue = ContextValue.TODO;
                 treeItems.push(newItem);
-            } else if (object.type === "Folder") {
+            } else if (object.type === Type.FOLDER) {
                 const newItem = new vscode.TreeItem(
                     object.label,
                     vscode.TreeItemCollapsibleState.Expanded
@@ -115,7 +114,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                 newItem.id = object.id;
                 newItem.folders = object.folders;
                 newItem.todos = object.todos;
-                newItem.contextValue = "folder";
+                newItem.contextValue = ContextValue.FOLDER;
                 treeItems.push(newItem);
             }
         });
@@ -136,16 +135,16 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                 newItem.id = todo.id;
                 newItem.description = this.showDates ? todo.date : "";
                 newItem.text = todo.text;
-                if (todo.color === "blue") {
+                if (todo.color === TodoColor.BLUE) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
-                } else if (todo.color === "yellow") {
+                } else if (todo.color === TodoColor.YELLOW) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "yellow-circle.svg");
-                } else if (todo.color === "red") {
+                } else if (todo.color === TodoColor.RED) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "red-circle.svg");
-                } else if (todo.color === "green") {
+                } else if (todo.color === TodoColor.GREEN) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "green-circle.svg");
                 }
-                newItem.contextValue = "todo";
+                newItem.contextValue = ContextValue.TODO;
                 treeItems.push(newItem);
             });
         }
@@ -158,7 +157,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                 newItem.id = folder.id;
                 newItem.folders = folder.folders;
                 newItem.todos = folder.todos;
-                newItem.contextValue = "folder";
+                newItem.contextValue = ContextValue.FOLDER;
                 treeItems.push(newItem);
             });
         }

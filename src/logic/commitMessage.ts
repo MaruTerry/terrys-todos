@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Repository } from "../api/git";
 import {
     deleteIncludedTodos,
-    getAllDoneTodos,
+    getDoneTodos,
     includeDoneTodosOnce,
     updateDoneTodosInWorkspace,
 } from "../settings/workspaceProperties";
@@ -11,7 +11,7 @@ import { sortTodosByFolderPath } from "../util/sortByFolderPath";
 import { deleteDoneTodoById } from "./todo";
 
 export async function generateCommitMessage(repository: Repository) {
-    let doneTodos = await getAllDoneTodos();
+    let doneTodos = await getDoneTodos();
     sortTodosByFolderPath(doneTodos);
 
     let commitMsg = getCommitMessageBasedOnGitChanges(repository);

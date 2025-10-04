@@ -305,20 +305,14 @@
         "configuration": {
             "title": "terrys-todos",
             "properties": {
-                "terrys-todos.data": {
-                    "type": "array",
-                    "default": [],
-                    "items": {
-                        "type": "object"
-                    },
+                "terrys-todos.todos": {
+                    "type": "object",
+                    "default": {},
                     "description": "All todos and folders handled by Terry's Todos"
                 },
                 "terrys-todos.done-todos": {
-                    "type": "array",
-                    "default": [],
-                    "items": {
-                        "type": "object"
-                    },
+                    "type": "object",
+                    "default": {},
                     "description": "All done todos handled by Terry's Todos"
                 },
                 "terrys-todos.showDates": {

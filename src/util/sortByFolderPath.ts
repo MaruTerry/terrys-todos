@@ -1,4 +1,4 @@
-import { Todo } from "../interfaces/todo";
+import { Todo } from "../interfaces/interfaces";
 
 /**
  * Sorts all done todos by their folder path alphabeticially.

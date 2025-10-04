@@ -1,6 +1,19 @@
 import * as vscode from "vscode";
 
 /**
+ * Gets the current workspace folder name.
+ *
+ * @returns The name of the current workspace folder, or undefined if no workspace is opened.
+ */
+export function getCurrentWorkspaceFolder(): string | undefined {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+        return workspaceFolders[0].name;
+    }
+    return undefined;
+}
+
+/**
  * Checks if a workspace is opened or not.
  *
  * @returns True if a workspace is currently opened, false otherwise.

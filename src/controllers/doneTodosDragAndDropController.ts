@@ -1,14 +1,15 @@
 import * as vscode from "vscode";
 import { setTodoDone } from "../logic/todo";
 import { setFolderDone } from "../logic/folder";
-import { CustomTreeItem } from "../interfaces/customTreeItem";
+import { CustomTreeItem } from "../interfaces/interfaces";
+import { ContextValue, MimeType } from "../interfaces/enums";
 
 /**
  * Controller for handling drag and drop features of done todos in the sidebar tree view.
  */
 export class DoneTodosDragAndDropController implements vscode.TreeDragAndDropController<CustomTreeItem> {
-    dropMimeTypes: readonly string[] = ["item/todo", "folder/todo"];
-    dragMimeTypes: readonly string[] = ["item/done-todo"];
+    dropMimeTypes: readonly MimeType[] = [MimeType.TODO, MimeType.FOLDER];
+    dragMimeTypes: readonly MimeType[] = [MimeType.DONETODO];
 
     handleDrag?(
         source: readonly CustomTreeItem[],
@@ -16,8 +17,8 @@ export class DoneTodosDragAndDropController implements vscode.TreeDragAndDropCon
         token: vscode.CancellationToken
     ): void | Thenable<void> {
         let draggedItem = source[0];
-        if (draggedItem.contextValue?.includes("doneTodo")) {
-            dataTransfer.set("item/done-todo", new vscode.DataTransferItem(draggedItem));
+        if (draggedItem.contextValue?.includes(ContextValue.DONETODO)) {
+            dataTransfer.set(MimeType.DONETODO, new vscode.DataTransferItem(draggedItem));
         }
     }
 
@@ -26,13 +27,13 @@ export class DoneTodosDragAndDropController implements vscode.TreeDragAndDropCon
         dataTransfer: vscode.DataTransfer,
         token: vscode.CancellationToken
     ): void | Thenable<void> {
-        if (dataTransfer.get("item/todo")?.value !== "" && dataTransfer.get("item/todo")?.value !== undefined) {
-            this.handleTodoDrop(target, JSON.parse(dataTransfer.get("item/todo")?.value));
+        if (dataTransfer.get(MimeType.TODO)?.value !== "" && dataTransfer.get(MimeType.TODO)?.value !== undefined) {
+            this.handleTodoDrop(target, JSON.parse(dataTransfer.get(MimeType.TODO)?.value));
         } else if (
-            dataTransfer.get("folder/todo")?.value !== "" &&
-            dataTransfer.get("folder/todo")?.value !== undefined
+            dataTransfer.get(MimeType.FOLDER)?.value !== "" &&
+            dataTransfer.get(MimeType.FOLDER)?.value !== undefined
         ) {
-            this.handleFolderDrop(target, JSON.parse(dataTransfer.get("folder/todo")?.value));
+            this.handleFolderDrop(target, JSON.parse(dataTransfer.get(MimeType.FOLDER)?.value));
         }
     }
 

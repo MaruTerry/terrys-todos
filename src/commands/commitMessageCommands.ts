@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { generateCommitMessage } from "../logic/commitMessage";
 import { getGitExtension } from "../util/gitSourceControl";
-import { isWorkspaceOpened } from "../util/workspaceChecker";
+import { isWorkspaceOpened } from "../util/workspace";
 
 /**
  * Registers all commands related to commit messages.
@@ -11,18 +11,17 @@ import { isWorkspaceOpened } from "../util/workspaceChecker";
 export function registerCommitMessageCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.generateCommitMessage", async () => {
-            if (isWorkspaceOpened()) {
-                const git = getGitExtension()!;
-                if (git.repositories !== undefined) {
-                    if (git.repositories.length > 0) {
-                        await generateCommitMessage(git.repositories[0]);
-                    } else {
-                        vscode.window.showErrorMessage("No git repositories found");
-                    }
-                } else {
-                    vscode.window.showErrorMessage("No git repositories found");
-                }
+            if (!isWorkspaceOpened()) {
+                return;
             }
+
+            const git = getGitExtension()!;
+            if (git.repositories === undefined || git.repositories.length === 0) {
+                vscode.window.showErrorMessage("No git repositories found");
+                return;
+            }
+
+            await generateCommitMessage(git.repositories[0]);
         })
     );
 }

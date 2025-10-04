@@ -3,7 +3,7 @@ import { DoneTodosDragAndDropController } from "../controllers/doneTodosDragAndD
 import { TodosDragAndDropController } from "../controllers/todosDragAndDropController";
 import { DoneTodosTreeDataProvider } from "../providers/doneTodosTreeProvider";
 import { TodosTreeDataProvider } from "../providers/todosTreeProvider";
-import { isWorkspaceOpened } from "../util/workspaceChecker";
+import { isWorkspaceOpened } from "../util/workspace";
 
 /**
  * Registers all tree views.
@@ -34,13 +34,12 @@ export function registerTreeViews(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
-            if (isWorkspaceOpened()) {
-                todosTreeDataProvider.refresh(true).then(() => {
-                    doneTodosTreeDataProvider.refresh(true).then(() => {
-                        vscode.window.showInformationMessage("Todos refreshed");
-                    });
-                });
+            if (!isWorkspaceOpened()) {
+                return;
             }
+            Promise.all([todosTreeDataProvider.refresh(true), doneTodosTreeDataProvider.refresh(true)]).then(() => {
+                vscode.window.showInformationMessage("Todos refreshed");
+            });
         })
     );
 }
