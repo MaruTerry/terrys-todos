@@ -3,6 +3,7 @@ import * as path from "path";
 import { getTodos, showDates } from "../settings/workspaceProperties";
 import { CustomTreeItem, Todo, Folder } from "../interfaces/interfaces";
 import { ContextValue, TodoColor, Type } from "../interfaces/enums";
+import { formatDate } from "../util/date";
 
 /**
  * Tree data provider for displaying todos in the sidebar tree view.
@@ -93,7 +94,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
                     vscode.TreeItemCollapsibleState.None
                 ) as CustomTreeItem;
                 newItem.id = object.id;
-                newItem.description = this.showDates ? object.date : "";
+                newItem.description = this.showDates ? formatDate(object.date) : "";
                 newItem.text = object.text;
                 if (object.color === TodoColor.BLUE) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
@@ -133,7 +134,7 @@ export class TodosTreeDataProvider implements vscode.TreeDataProvider<CustomTree
             currentTreeItem.todos.forEach((todo) => {
                 const newItem = new vscode.TreeItem(todo.text, vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
                 newItem.id = todo.id;
-                newItem.description = this.showDates ? todo.date : "";
+                newItem.description = this.showDates ? formatDate(todo.date) : "";
                 newItem.text = todo.text;
                 if (todo.color === TodoColor.BLUE) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");

@@ -3,6 +3,7 @@ import * as path from "path";
 import { getDoneTodos, showDates } from "../settings/workspaceProperties";
 import { CustomTreeItem, Todo, Folder } from "../interfaces/interfaces";
 import { ContextValue, TodoColor, Type } from "../interfaces/enums";
+import { formatDate } from "../util/date";
 
 /**
  * Tree data provider for displaying done todos in the sidebar tree view.
@@ -93,7 +94,7 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
                     vscode.TreeItemCollapsibleState.None
                 ) as CustomTreeItem;
                 newItem.id = object.id;
-                newItem.description = this.showDates ? object.date : "";
+                newItem.description = this.showDates ? formatDate(object.date) : "";
                 newItem.text = object.text;
                 if (object.color === TodoColor.BLUE) {
                     newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");

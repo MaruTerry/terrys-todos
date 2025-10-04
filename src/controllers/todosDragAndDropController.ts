@@ -10,7 +10,7 @@ import { ContextValue, MimeType } from "../interfaces/enums";
  * Controller for handling drag and drop features of todos in the sidebar tree view.
  */
 export class TodosDragAndDropController implements vscode.TreeDragAndDropController<CustomTreeItem> {
-    dropMimeTypes: readonly string[] = [MimeType.TODO, MimeType.DONETODO, MimeType.FOLDER];
+    dropMimeTypes: readonly string[] = [MimeType.TODO, MimeType.FOLDER];
     dragMimeTypes: readonly string[] = [MimeType.TODO, MimeType.FOLDER];
 
     todosTreeDataProvider: TodosTreeDataProvider;
@@ -44,11 +44,6 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
             dataTransfer.get(MimeType.FOLDER)?.value !== undefined
         ) {
             this.handleFolderDrop(target, dataTransfer.get(MimeType.FOLDER)?.value);
-        } else if (
-            dataTransfer.get(MimeType.DONETODO)?.value !== "" &&
-            dataTransfer.get(MimeType.DONETODO)?.value !== undefined
-        ) {
-            this.handleDoneTodoDrop(target, JSON.parse(dataTransfer.get(MimeType.DONETODO)?.value));
         }
     }
 
@@ -108,34 +103,6 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
                 } else {
                     await moveFolderById(droppedFolderTreeItem.id);
                 }
-            }
-        }
-    }
-
-    /**
-     * Handles the drop of a done todo.
-     *
-     * @param target - The target tree element that the drop is occurring on. When undefined, the target is the root.
-     * @param droppedTodo - The dropped todo represented as a CustomTreeItem.
-     */
-    async handleDoneTodoDrop(target: CustomTreeItem | undefined, droppedDoneTodo: CustomTreeItem) {
-        if (droppedDoneTodo.id) {
-            await setTodoNotDone(droppedDoneTodo);
-            if (target !== undefined) {
-                if (target.id) {
-                    if (target.contextValue === ContextValue.FOLDER) {
-                        await moveTodoById(droppedDoneTodo.id, target.id);
-                    } else if (target.contextValue === ContextValue.TODO) {
-                        const parentFolder = getParentFolderById(await getTodos(), target.id);
-                        if (parentFolder) {
-                            await moveTodoById(droppedDoneTodo.id, parentFolder.id);
-                        } else {
-                            await moveTodoById(droppedDoneTodo.id);
-                        }
-                    }
-                }
-            } else {
-                await moveTodoById(droppedDoneTodo.id);
             }
         }
     }

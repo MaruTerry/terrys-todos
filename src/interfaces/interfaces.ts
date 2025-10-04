@@ -66,12 +66,11 @@ export interface Todo {
  * @returns A new Todo object.
  */
 export function createTodoObject(text: string, color: TodoColor = TodoColor.BLUE, folderPath: string[] = []): Todo {
-    const currentDate = new Date();
     return {
         type: Type.TODO,
         id: getNonce(),
         text,
-        date: `${currentDate.getDate()}.${currentDate.getMonth() + 1}.${currentDate.getFullYear()}`,
+        date: new Date().toString(),
         color,
         folderPath: folderPath,
         addedToCommitMessage: false,

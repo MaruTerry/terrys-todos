@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { DoneTodosDragAndDropController } from "../controllers/doneTodosDragAndDropController";
 import { TodosDragAndDropController } from "../controllers/todosDragAndDropController";
 import { DoneTodosTreeDataProvider } from "../providers/doneTodosTreeProvider";
 import { TodosTreeDataProvider } from "../providers/todosTreeProvider";
@@ -23,23 +22,21 @@ export function registerTreeViews(context: vscode.ExtensionContext) {
     );
 
     const doneTodosTreeDataProvider = new DoneTodosTreeDataProvider();
-    const doneTodosDragAndDropController = new DoneTodosDragAndDropController();
 
     context.subscriptions.push(
         vscode.window.createTreeView("done-todos-tree", {
             treeDataProvider: doneTodosTreeDataProvider,
-            dragAndDropController: doneTodosDragAndDropController,
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand("terrys-todos.refreshTodos", () => {
+        vscode.commands.registerCommand("terrys-todos.refreshTodos", async () => {
             if (!isWorkspaceOpened()) {
                 return;
             }
-            Promise.all([todosTreeDataProvider.refresh(true), doneTodosTreeDataProvider.refresh(true)]).then(() => {
-                vscode.window.showInformationMessage("Todos refreshed");
-            });
+            await todosTreeDataProvider.refresh(true);
+            await doneTodosTreeDataProvider.refresh(true);
+            vscode.window.showInformationMessage("Todos refreshed");
         })
     );
 }

@@ -29,7 +29,6 @@ export enum TodoColor {
  */
 export enum MimeType {
     TODO = "item/todo",
-    DONETODO = "item/done-todo",
     FOLDER = "folder/todo",
 }
 

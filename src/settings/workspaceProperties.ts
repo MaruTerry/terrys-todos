@@ -7,15 +7,15 @@ import { SortingMode } from "../interfaces/enums";
  * Gets the configuration value for the given key.
  *
  * @param key - The configuration key.
- * @param defaultValue- The default value.
- * @returns  A promise that resolves into the configuration value or the default value.
+ * @param defaultValue-  The default value.
+ * @returns A promise that resolves into the configuration value or the default value.
  */
 async function getConfiguration<T>(key: string, defaultValue: T, boundToWorkspace: boolean = true): Promise<T> {
     if (!boundToWorkspace) {
-        const value = await vscode.workspace.getConfiguration().get<T>("terrys-todos." + key);
+        const value = await vscode.workspace.getConfiguration().get("terrys-todos." + key);
         return value === undefined || value === null ? defaultValue : (value as T);
     }
-    const value = await vscode.workspace.getConfiguration().get<T>("terrys-todos." + key);
+    const value = await vscode.workspace.getConfiguration().get("terrys-todos." + key);
     const workspaceFolder = getCurrentWorkspaceFolder();
     if (value === undefined || value === null || workspaceFolder === undefined) {
         return defaultValue;
@@ -49,7 +49,7 @@ export async function getTodos(): Promise<(Todo | Folder)[]> {
 }
 
 export async function getDoneTodos(): Promise<Todo[]> {
-    return await getConfiguration<Todo[]>("done-todos", []);
+    return await getConfiguration<Todo[]>("donetodos", []);
 }
 
 export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
@@ -57,30 +57,30 @@ export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
 }
 
 export async function updateDoneTodosInWorkspace(newData: Todo[]) {
-    await setConfiguration<Todo[]>("done-todos", newData);
+    await setConfiguration<Todo[]>("donetodos", newData);
 }
 
 export async function getSortingMode(): Promise<SortingMode> {
-    return await getConfiguration<SortingMode>("sortingMode", SortingMode.COLOR, false);
+    return await getConfiguration<SortingMode>("sortingmode", SortingMode.COLOR, false);
 }
 
 export async function setSortingMode(sortingMode: SortingMode) {
-    await setConfiguration<SortingMode>("sortingMode", sortingMode, false);
+    await setConfiguration<SortingMode>("sortingmode", sortingMode, false);
 }
 
 export async function showDates(): Promise<boolean> {
-    return await getConfiguration<boolean>("showDates", false, false);
+    return await getConfiguration<boolean>("showdates", false, false);
 }
 
 export async function toggleShowDates() {
     const currentValue = await showDates();
-    await setConfiguration<boolean>("showDates", !currentValue, false);
+    await setConfiguration<boolean>("showdates", !currentValue, false);
 }
 
 export async function includeDoneTodosOnce(): Promise<boolean> {
-    return await getConfiguration<boolean>("includeDoneTodosOnce", true, false);
+    return await getConfiguration<boolean>("includedonetodosonce", true, false);
 }
 
 export async function deleteIncludedTodos(): Promise<boolean> {
-    return await getConfiguration<boolean>("deleteIncludedTodos", false, false);
+    return await getConfiguration<boolean>("deleteincludedtodos", false, false);
 }
