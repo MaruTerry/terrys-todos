@@ -66,6 +66,8 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
                         } else {
                             await moveTodoById(droppedTodo.id);
                         }
+                    } else if (target.contextValue === ContextValue.WORKSPACE) {
+                        await moveTodoById(droppedTodo.id);
                     }
                 }
             } else {
@@ -97,6 +99,8 @@ export class TodosDragAndDropController implements vscode.TreeDragAndDropControl
                                 } else {
                                     await moveFolderById(droppedFolderTreeItem.id);
                                 }
+                            } else if (target.contextValue === ContextValue.WORKSPACE) {
+                                await moveFolderById(droppedFolderTreeItem.id);
                             }
                         }
                     }

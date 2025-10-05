@@ -46,7 +46,11 @@
             },
             {
                 "command": "terrys-todos.refreshTodos",
-                "title": "Refresh"
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
             },
             {
                 "command": "terrys-todos.setTodoDone",
@@ -95,6 +99,10 @@
             {
                 "command": "terrys-todos.toggleDates",
                 "title": "Toggle Dates"
+            },
+            {
+                "command": "terrys-todos.toggleInlineComments",
+                "title": "Toggle Inline Comments"
             },
             {
                 "command": "terrys-todos.setSortingModeDate",
@@ -191,32 +199,37 @@
                 {
                     "command": "terrys-todos.refreshTodos",
                     "when": "view == todos-tree || view == done-todos-tree",
-                    "group": "1"
+                    "group": "navigation"
                 },
                 {
                     "command": "terrys-todos.deleteAllNotDoneTodos",
                     "when": "view == todos-tree",
-                    "group": "2"
+                    "group": "1"
                 },
                 {
                     "command": "terrys-todos.deleteAllDoneTodos",
                     "when": "view == done-todos-tree",
-                    "group": "2"
+                    "group": "1"
                 },
                 {
                     "command": "terrys-todos.toggleDates",
                     "when": "view == todos-tree || view == done-todos-tree",
-                    "group": "3"
+                    "group": "2"
+                },
+                {
+                    "command": "terrys-todos.toggleInlineComments",
+                    "when": "view == todos-tree || view == done-todos-tree",
+                    "group": "2"
                 },
                 {
                     "command": "terrys-todos.setSortingModeDate",
                     "when": "view == todos-tree",
-                    "group": "4"
+                    "group": "3"
                 },
                 {
                     "command": "terrys-todos.setSortingModeColor",
                     "when": "view == todos-tree",
-                    "group": "4"
+                    "group": "3"
                 },
                 {
                     "command": "terrys-todos.createBaseFolder",
@@ -271,28 +284,38 @@
                     "group": "3"
                 },
                 {
+                    "command": "terrys-todos.createTodo",
+                    "when": "(view == todos-tree && viewItem === workspace)",
+                    "group": "2"
+                },
+                {
+                    "command": "terrys-todos.createBaseFolder",
+                    "when": "(view == todos-tree && viewItem === workspace)",
+                    "group": "1"
+                },
+                {
                     "command": "terrys-todos.createFolder",
-                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "when": "(view == todos-tree && viewItem === folder)",
                     "group": "1"
                 },
                 {
                     "command": "terrys-todos.createTodoInFolder",
-                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "when": "(view == todos-tree && viewItem === folder)",
                     "group": "2"
                 },
                 {
                     "command": "terrys-todos.setFolderDone",
-                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "when": "(view == todos-tree && viewItem === folder)",
                     "group": "inline"
                 },
                 {
                     "command": "terrys-todos.editFolderLabel",
-                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "when": "(view == todos-tree && viewItem === folder)",
                     "group": "3"
                 },
                 {
                     "command": "terrys-todos.deleteFolder",
-                    "when": "(view == todos-tree && viewItem === folder) || (view == done-todos-tree && viewItem === folder)",
+                    "when": "(view == todos-tree && viewItem === folder)",
                     "group": "3"
                 }
             ]
@@ -321,6 +344,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Boolean to toggle the dates shown as descriptions"
+                },
+                "terrys-todos.showinlinecomments": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Boolean to toggle the visibility of inline comments"
                 },
                 "terrys-todos.sortingmode": {
                     "type": "string",

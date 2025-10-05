@@ -50,20 +50,12 @@ export async function getTodos(): Promise<(Todo | Folder)[]> {
     return await getConfiguration<(Todo | Folder)[]>("todos", []);
 }
 
-export async function getGlobalTodos(): Promise<(Todo | Folder)[]> {
-    return await getConfiguration<(Todo | Folder)[]>("todosglobal", [], false);
-}
-
 export async function getDoneTodos(): Promise<Todo[]> {
     return await getConfiguration<Todo[]>("donetodos", []);
 }
 
-export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
+export async function updateTodosInWorkspace(newData: (Todo | Folder)[]) {
     await setConfiguration<(Todo | Folder)[]>("todos", newData);
-}
-
-export async function updateGlobalTodosInWorkspace(newData: (Todo | Folder)[]) {
-    await setConfiguration<(Todo | Folder)[]>("todosglobal", newData, false);
 }
 
 export async function updateDoneTodosInWorkspace(newData: Todo[]) {
@@ -85,6 +77,14 @@ export async function showDates(): Promise<boolean> {
 export async function toggleShowDates() {
     const currentValue = await showDates();
     await setConfiguration<boolean>("showdates", !currentValue, false);
+}
+export async function showInlineComments(): Promise<boolean> {
+    return await getConfiguration<boolean>("showinlinecomments", true, false);
+}
+
+export async function toggleInlineComments() {
+    const currentValue = await showInlineComments();
+    await setConfiguration<boolean>("showinlinecomments", !currentValue, false);
 }
 
 export async function includeDoneTodosOnce(): Promise<boolean> {

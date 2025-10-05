@@ -1,9 +1,14 @@
 import * as vscode from "vscode";
-import { setSortingMode, getTodos, updateDataInWorkspace, toggleShowDates } from "../settings/workspaceProperties";
-import { sortTodosByColor } from "../util/sortByColor";
-import { sortTodosByDate } from "../util/sortByDate";
+import {
+    setSortingMode,
+    getTodos,
+    updateTodosInWorkspace,
+    toggleShowDates,
+    toggleInlineComments,
+} from "../settings/workspaceProperties";
 import { isWorkspaceOpened } from "../util/workspace";
 import { SortingMode } from "../interfaces/enums";
+import { sortTodosByDate, sortTodosByColor } from "../util/sorting";
 
 /**
  * Registers all commands related to settings (like description toggle or sorting modes).
@@ -21,6 +26,15 @@ export function registerSettingCommands(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.toggleInlineComments", async () => {
+            if (!isWorkspaceOpened()) {
+                return;
+            }
+            await toggleInlineComments();
+        })
+    );
+
+    context.subscriptions.push(
         vscode.commands.registerCommand("terrys-todos.setSortingModeDate", async () => {
             if (!isWorkspaceOpened()) {
                 return;
@@ -28,7 +42,7 @@ export function registerSettingCommands(context: vscode.ExtensionContext) {
             await setSortingMode(SortingMode.DATE);
             const data = await getTodos();
             await sortTodosByDate(data);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         })
     );
 
@@ -40,7 +54,7 @@ export function registerSettingCommands(context: vscode.ExtensionContext) {
             await setSortingMode(SortingMode.COLOR);
             const data = await getTodos();
             await sortTodosByColor(data);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         })
     );
 }

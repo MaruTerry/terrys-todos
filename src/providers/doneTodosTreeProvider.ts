@@ -97,13 +97,45 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
                 newItem.description = this.showDates ? formatDate(object.date) : "";
                 newItem.text = object.text;
                 if (object.color === TodoColor.BLUE) {
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "blue-circle.svg");
+                    newItem.iconPath = path.join(
+                        __filename,
+                        "..",
+                        "..",
+                        "..",
+                        "resources",
+                        "circles",
+                        "blue-circle.svg"
+                    );
                 } else if (object.color === TodoColor.YELLOW) {
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "yellow-circle.svg");
+                    newItem.iconPath = path.join(
+                        __filename,
+                        "..",
+                        "..",
+                        "..",
+                        "resources",
+                        "circles",
+                        "yellow-circle.svg"
+                    );
                 } else if (object.color === TodoColor.RED) {
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "red-circle.svg");
+                    newItem.iconPath = path.join(
+                        __filename,
+                        "..",
+                        "..",
+                        "..",
+                        "resources",
+                        "circles",
+                        "red-circle.svg"
+                    );
                 } else if (object.color === TodoColor.GREEN) {
-                    newItem.iconPath = path.join(__filename, "..", "..", "..", "resources", "green-circle.svg");
+                    newItem.iconPath = path.join(
+                        __filename,
+                        "..",
+                        "..",
+                        "..",
+                        "resources",
+                        "circles",
+                        "green-circle.svg"
+                    );
                 }
                 newItem.contextValue = ContextValue.DONETODO;
                 treeItems.push(newItem);

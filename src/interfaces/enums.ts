@@ -38,7 +38,10 @@ export enum MimeType {
  */
 export enum ContextValue {
     TODO = "todo",
+    INLINE_TODO = "inlineTodo",
     DONETODO = "doneTodo",
     FOLDER = "folder",
+    WORKSPACE = "workspace",
+    INLINE_COMMENTS = "inlineComments",
     NODATA = "noData",
 }

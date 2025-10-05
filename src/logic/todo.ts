@@ -1,16 +1,15 @@
 import * as vscode from "vscode";
-import { sortTodosByDate } from "../util/sortByDate";
 import {
     getTodos,
-    updateDataInWorkspace,
+    updateTodosInWorkspace,
     getDoneTodos,
     updateDoneTodosInWorkspace,
     getSortingMode,
 } from "../settings/workspaceProperties";
-import { sortTodosByColor } from "../util/sortByColor";
 import { getFolderById, getParentFolderById } from "./folder";
 import { Todo, Folder, CustomTreeItem, createTodoObject } from "../interfaces/interfaces";
 import { SortingMode, TodoColor, Type } from "../interfaces/enums";
+import { sortTodosByDate, sortTodosByColor, sortData } from "../util/sorting";
 
 /**
  * Gets a todo defined by the given id from the given data.
@@ -82,29 +81,25 @@ export async function updateTodoFolderPaths(data: (Todo | Folder)[], currentFold
  * @param treeItem - The treeItem representing the folder to create the todo in.
  */
 export async function createTodo(treeItem?: CustomTreeItem) {
-    const data: (Todo | Folder)[] = await getTodos();
     const text = await vscode.window.showInputBox({ prompt: "Enter the todo" });
-    if (text && data) {
-        const newTodo = createTodoObject(text);
-        if (treeItem !== undefined && treeItem.id) {
-            newTodo.folderPath = treeItem.folderPath
-                ? treeItem.folderPath.concat(treeItem.label?.toString() ?? "")
-                : [treeItem.label?.toString() ?? ""];
-            const folder = await getFolderById(treeItem.id, data);
-            if (folder) {
-                folder.todos.push(newTodo);
-            }
-        } else {
-            data.push(newTodo);
-        }
-        const sortingMode = await getSortingMode();
-        if (sortingMode === SortingMode.DATE) {
-            await sortTodosByDate(data);
-        } else if (sortingMode === SortingMode.COLOR) {
-            await sortTodosByColor(data);
-        }
-        await updateDataInWorkspace(data);
+    if (!text) {
+        return;
     }
+    const data: (Todo | Folder)[] = await getTodos();
+    const newTodo = createTodoObject(text);
+    if (treeItem !== undefined && treeItem.id && treeItem.contextValue === "folder") {
+        newTodo.folderPath = treeItem.folderPath
+            ? treeItem.folderPath.concat(treeItem.label?.toString() ?? "")
+            : [treeItem.label?.toString() ?? ""];
+        const folder = await getFolderById(treeItem.id, data);
+        if (folder) {
+            folder.todos.push(newTodo);
+        }
+    } else {
+        data.push(newTodo);
+    }
+    await sortData(data);
+    await updateTodosInWorkspace(data);
 }
 
 /**
@@ -119,7 +114,7 @@ export async function editTodo(treeItem: CustomTreeItem) {
         let todoToEdit = getTodoById(treeItem.id, data);
         if (todoToEdit !== undefined) {
             todoToEdit.text = newText;
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -196,7 +191,7 @@ function removeTodoFromFolder(folder: Folder, id: string) {
  * Deletes all not done todos.
  */
 export async function deleteAllNotDoneTodos(): Promise<void> {
-    await updateDataInWorkspace([]);
+    await updateTodosInWorkspace([]);
 }
 
 /**
@@ -218,7 +213,7 @@ export async function setTodoDone(treeItem: CustomTreeItem) {
         let todoToEdit = getTodoById(treeItem.id, data);
         if (todoToEdit !== undefined) {
             deleteTodoById(treeItem.id, data);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
             doneTodos.push(todoToEdit);
             await updateDoneTodosInWorkspace(doneTodos);
         }
@@ -240,7 +235,7 @@ export async function setTodoNotDone(treeItem: CustomTreeItem) {
             await updateDoneTodosInWorkspace(doneTodos);
             todoToEdit.addedToCommitMessage = false;
             data.push(todoToEdit);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -272,7 +267,7 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
                 } else if (sortingMode === SortingMode.COLOR) {
                     await sortTodosByColor(data);
                 }
-                await updateDataInWorkspace(data);
+                await updateTodosInWorkspace(data);
             }
         } else {
             if (currentFolder) {
@@ -288,7 +283,7 @@ export async function moveTodoById(todoId: string, targetFolderId?: string) {
             } else if (sortingMode === SortingMode.COLOR) {
                 await sortTodosByColor(data);
             }
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -307,7 +302,7 @@ export async function setTodoColor(treeItem: CustomTreeItem, color: TodoColor) {
             let todo = getTodoById(treeItem.id, data);
             if (todo) {
                 todo.color = color;
-                await updateDataInWorkspace(data);
+                await updateTodosInWorkspace(data);
                 return;
             }
             todo = getTodoById(treeItem.id, doneTodos);

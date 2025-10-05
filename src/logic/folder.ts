@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import {
     getTodos,
-    updateDataInWorkspace,
+    updateTodosInWorkspace,
     getDoneTodos,
     updateDoneTodosInWorkspace,
 } from "../settings/workspaceProperties";
@@ -106,7 +106,7 @@ export async function createBaseFolder() {
     if (folderLabel && data) {
         const newFolder = createFolderObject(folderLabel);
         data.push(newFolder);
-        await updateDataInWorkspace(data);
+        await updateTodosInWorkspace(data);
     }
 }
 
@@ -123,7 +123,7 @@ export async function createFolder(treeItem: CustomTreeItem) {
         if (folderToEdit !== undefined) {
             const newFolder = createFolderObject(folderLabel);
             folderToEdit.folders.push(newFolder);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -144,7 +144,7 @@ export async function editFolderLabel(treeItem: CustomTreeItem) {
         if (folderToEdit !== undefined) {
             folderToEdit.label = newLabel;
             await updateTodoFolderPaths(data, []);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -162,11 +162,11 @@ export async function deleteFolderById(id: string): Promise<void> {
         if (item.type === Type.FOLDER) {
             if (item.id === id) {
                 data.splice(i, 1);
-                await updateDataInWorkspace(data);
+                await updateTodosInWorkspace(data);
                 return;
             } else {
                 if (removeFolderRecursively(item, id)) {
-                    await updateDataInWorkspace(data);
+                    await updateTodosInWorkspace(data);
                     return;
                 }
             }
@@ -207,7 +207,7 @@ export async function deleteEmptyFolders() {
         if (item.type === Type.FOLDER) {
             if (item.todos.length === 0 && item.folders.length === 0) {
                 data.splice(i, 1);
-                await updateDataInWorkspace(data);
+                await updateTodosInWorkspace(data);
                 deleteEmptyFolders();
             }
         }
@@ -235,7 +235,7 @@ export async function moveFolderById(folderId: string, targetFolderId?: string) 
                 }
                 targetFolder.folders.push(folderToMove);
                 await updateTodoFolderPaths(data, []);
-                await updateDataInWorkspace(data);
+                await updateTodosInWorkspace(data);
             }
         } else {
             if (currentFolder) {
@@ -245,7 +245,7 @@ export async function moveFolderById(folderId: string, targetFolderId?: string) 
             }
             data.push(folderToMove);
             await updateTodoFolderPaths(data, []);
-            await updateDataInWorkspace(data);
+            await updateTodosInWorkspace(data);
         }
     }
 }
@@ -263,7 +263,7 @@ export async function setFolderDone(treeItem: CustomTreeItem) {
             deleteTodoById(todo.id, todos);
             doneTodos.push(todo);
         }
-        await updateDataInWorkspace(todos);
+        await updateTodosInWorkspace(todos);
         await updateDoneTodosInWorkspace(doneTodos);
     }
     if (treeItem.folders) {

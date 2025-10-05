@@ -1,21 +1,23 @@
 import * as vscode from "vscode";
-import { createTodoObject, Todo } from "../interfaces/interfaces";
 import { TodoColor } from "../interfaces/enums";
+import { createTodoObject, Todo } from "../interfaces/interfaces";
 
 /**
- * Get all inline comments (// TODO: ...) from the current workspace.
+ * Get all 'TODO' instances from the current workspace based on common comment syntax.
  * @returns A promise with an array of Todo objects representing the inline comments.
  */
 export async function getInlineComments(): Promise<Todo[]> {
     const inlineComments: Todo[] = [];
 
-    // Search all files (**/*) but exclude common directories like node_modules, .git, etc.
+    // Define the files to search (excluding common ignored directories)
     const files = await vscode.workspace.findFiles("**/*", "{**/node_modules/**,**/.git/**,**/.vscode/**}");
 
-    // Pattern: Matches '//', followed by optional whitespace, 'TODO', optional colon,
-    // optional whitespace, and captures the rest of the line.
-    // It is case-insensitive (i), and applies to the whole line (g).
-    const todoRegex = /(\/\/|\/\*|\*)\s*TODO(:?)\s*(.*)/gi;
+    // Comprehensive Regex: Matches comment start (//, #, --, /*, *) followed by 'TODO'.
+    // (\/\/|#|--|\/\*|\*): Captures common single-line starts and block comment starts.
+    // \s*: Optional whitespace.
+    // TODO(:?): The keyword with an optional colon.
+    // (.*): Captures the rest of the todo text.
+    const todoRegex = /(\/\/|#|--|\/\*|\*)\s*TODO(:?)\s*(.*)/gi;
 
     // Process each file
     for (const file of files) {
