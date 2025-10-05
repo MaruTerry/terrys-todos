@@ -154,18 +154,20 @@
                 {
                     "id": "terrys-todos",
                     "title": "Terry's Todos",
-                    "icon": "resources/terrys-todos.svg"
+                    "icon": "resources/terrys-todos-icon.png"
                 }
             ]
         },
         "views": {
             "terrys-todos": [
                 {
+                    "icon": "resources/terrys-todos-icon.png",
                     "id": "todos-tree",
                     "name": "Todos",
                     "type": "tree"
                 },
                 {
+                    "icon": "resources/terrys-todos-icon.png",
                     "id": "done-todos-tree",
                     "name": "Done Todos",
                     "type": "tree"

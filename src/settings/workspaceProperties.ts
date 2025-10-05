@@ -30,12 +30,14 @@ async function getConfiguration<T>(key: string, defaultValue: T, boundToWorkspac
  * @param value - The value to set.
  */
 async function setConfiguration<T>(key: string, value: T, bindToWorkspace: boolean = true) {
-    const valueWithWorkspace: Record<string, T> = {};
+    let valueWithWorkspace: Record<string, T> = {};
     if (bindToWorkspace) {
+        const existingValue = await vscode.workspace.getConfiguration().get("terrys-todos." + key);
         const workspaceFolder = getCurrentWorkspaceFolder();
-        if (workspaceFolder === undefined) {
+        if (workspaceFolder === undefined || existingValue === undefined) {
             return;
         }
+        valueWithWorkspace = existingValue as Record<string, T>;
         valueWithWorkspace[workspaceFolder] = value;
     }
     await vscode.workspace
@@ -48,12 +50,20 @@ export async function getTodos(): Promise<(Todo | Folder)[]> {
     return await getConfiguration<(Todo | Folder)[]>("todos", []);
 }
 
+export async function getGlobalTodos(): Promise<(Todo | Folder)[]> {
+    return await getConfiguration<(Todo | Folder)[]>("todosglobal", [], false);
+}
+
 export async function getDoneTodos(): Promise<Todo[]> {
     return await getConfiguration<Todo[]>("donetodos", []);
 }
 
 export async function updateDataInWorkspace(newData: (Todo | Folder)[]) {
     await setConfiguration<(Todo | Folder)[]>("todos", newData);
+}
+
+export async function updateGlobalTodosInWorkspace(newData: (Todo | Folder)[]) {
+    await setConfiguration<(Todo | Folder)[]>("todosglobal", newData, false);
 }
 
 export async function updateDoneTodosInWorkspace(newData: Todo[]) {

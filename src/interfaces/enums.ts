@@ -18,6 +18,7 @@ export enum SortingMode {
  * Defines the possible colors for todos.
  */
 export enum TodoColor {
+    WHITE = "white",
     BLUE = "blue",
     GREEN = "green",
     RED = "red",

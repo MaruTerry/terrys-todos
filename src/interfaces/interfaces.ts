@@ -54,6 +54,9 @@ export interface Todo {
     color: TodoColor;
     folderPath: string[];
     addedToCommitMessage: boolean;
+    fileName?: string;
+    filePath?: string;
+    lineNumber?: number;
 }
 
 /**
@@ -62,10 +65,20 @@ export interface Todo {
  * @param text - The text of the todo.
  * @param color - The color of the todo. Default is "blue".
  * @param folderPath - The folder path where the todo is located. Default is an empty array.
+ * @param fileName - The name of the file where the todo is located.
+ * @param filePath - The path of the file where the todo is located.
+ * @param lineNumber - The line number in the file where the todo is located.
  *
  * @returns A new Todo object.
  */
-export function createTodoObject(text: string, color: TodoColor = TodoColor.BLUE, folderPath: string[] = []): Todo {
+export function createTodoObject(
+    text: string,
+    color: TodoColor = TodoColor.BLUE,
+    folderPath: string[] = [],
+    fileName?: string,
+    filePath?: string,
+    lineNumber?: number
+): Todo {
     return {
         type: Type.TODO,
         id: getNonce(),
@@ -74,5 +87,8 @@ export function createTodoObject(text: string, color: TodoColor = TodoColor.BLUE
         color,
         folderPath: folderPath,
         addedToCommitMessage: false,
+        fileName,
+        filePath,
+        lineNumber,
     };
 }
