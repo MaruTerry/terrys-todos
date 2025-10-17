@@ -89,6 +89,10 @@
                 "title": "Delete"
             },
             {
+                "command": "terrys-todos.deleteDoneTodo",
+                "title": "Delete"
+            },
+            {
                 "command": "terrys-todos.deleteAllNotDoneTodos",
                 "title": "Delete All"
             },
@@ -155,6 +159,18 @@
                     "light": "resources/light/lightbulb.svg",
                     "dark": "resources/dark/lightbulb.svg"
                 }
+            },
+            {
+                "command": "terrys-todos.ignoreFile",
+                "title": "Ignore this File"
+            },
+            {
+                "command": "terrys-todos.resetIgnoredFiles",
+                "title": "Reset Ignored Files"
+            },
+            {
+                "command": "terrys-todos.ignoreFileLine",
+                "title": "Ignore this Line"
             }
         ],
         "viewsContainers": {
@@ -232,6 +248,11 @@
                     "group": "3"
                 },
                 {
+                    "command": "terrys-todos.resetIgnoredFiles",
+                    "when": "view == todos-tree",
+                    "group": "4"
+                },
+                {
                     "command": "terrys-todos.createBaseFolder",
                     "when": "view == todos-tree",
                     "group": "navigation"
@@ -260,7 +281,12 @@
                 },
                 {
                     "command": "terrys-todos.deleteTodo",
-                    "when": "(view == todos-tree && viewItem === todo) || (view == done-todos-tree && viewItem === doneTodo)",
+                    "when": "(view == todos-tree && viewItem === todo)",
+                    "group": "2"
+                },
+                {
+                    "command": "terrys-todos.deleteDoneTodo",
+                    "when": "(view == done-todos-tree && viewItem === doneTodo)",
                     "group": "2"
                 },
                 {
@@ -317,6 +343,21 @@
                     "command": "terrys-todos.deleteFolder",
                     "when": "(view == todos-tree && viewItem === folder)",
                     "group": "3"
+                },
+                {
+                    "command": "terrys-todos.refreshTodos",
+                    "when": "(view == todos-tree && viewItem === inlineComments)",
+                    "group": "inline"
+                },
+                {
+                    "command": "terrys-todos.ignoreFile",
+                    "when": "(view == todos-tree && viewItem === inlineFileGroup)",
+                    "group": "1"
+                },
+                {
+                    "command": "terrys-todos.ignoreFileLine",
+                    "when": "(view == todos-tree && viewItem === inlineTodo)",
+                    "group": "1"
                 }
             ]
         },
@@ -364,6 +405,22 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Once a done todo was included in the generated commit message, it will be permanently deleted"
+                },
+                "terrys-todos.ignoredFilePaths": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Array of file paths to be ignored when scanning for inline comments",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "terrys-todos.ignoredFileLines": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Array of file lines to be ignored when scanning for inline comments",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         }

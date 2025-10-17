@@ -11,6 +11,8 @@ export interface CustomTreeItem extends vscode.TreeItem {
     folders?: Folder[];
     todos?: Todo[];
     folderPath?: string[];
+    filePath?: string;
+    lineNumber?: number;
 }
 
 /**

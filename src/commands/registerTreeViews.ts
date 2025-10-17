@@ -34,8 +34,8 @@ export function registerTreeViews(context: vscode.ExtensionContext) {
             if (!isWorkspaceOpened()) {
                 return;
             }
-            await todosTreeDataProvider.refresh(true);
-            await doneTodosTreeDataProvider.refresh(true);
+            await todosTreeDataProvider.refresh();
+            await doneTodosTreeDataProvider.refresh();
             vscode.window.showInformationMessage("Todos refreshed");
         })
     );

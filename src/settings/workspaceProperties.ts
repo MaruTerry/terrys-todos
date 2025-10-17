@@ -94,3 +94,19 @@ export async function includeDoneTodosOnce(): Promise<boolean> {
 export async function deleteIncludedTodos(): Promise<boolean> {
     return await getConfiguration<boolean>("deleteincludedtodos", false, false);
 }
+
+export async function getIgnoredFilePaths(): Promise<string[]> {
+    return await getConfiguration<string[]>("ignoredFilePaths", [], false);
+}
+
+export async function setIgnoredFilePaths(paths: string[]) {
+    await setConfiguration<string[]>("ignoredFilePaths", paths, false);
+}
+
+export async function getIgnoredFileLines(): Promise<string[]> {
+    return await getConfiguration<string[]>("ignoredFileLines", [], false);
+}
+
+export async function setIgnoredFileLines(lines: string[]) {
+    await setConfiguration<string[]>("ignoredFileLines", lines, false);
+}

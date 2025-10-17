@@ -3,6 +3,7 @@ import {
     createTodo,
     deleteAllDoneTodos,
     deleteAllNotDoneTodos,
+    deleteDoneTodoById,
     deleteTodoById,
     editDoneTodo,
     editTodo,
@@ -11,7 +12,16 @@ import {
     setTodoNotDone,
 } from "../logic/todo";
 import { isWorkspaceOpened } from "../util/workspace";
-import { getTodos, updateTodosInWorkspace } from "../settings/workspaceProperties";
+import {
+    getDoneTodos,
+    getIgnoredFileLines,
+    getIgnoredFilePaths,
+    getTodos,
+    setIgnoredFileLines,
+    setIgnoredFilePaths,
+    updateDoneTodosInWorkspace,
+    updateTodosInWorkspace,
+} from "../settings/workspaceProperties";
 import { setFolderDone } from "../logic/folder";
 import { CustomTreeItem } from "../interfaces/interfaces";
 import { sortData } from "../util/sorting";
@@ -67,6 +77,17 @@ export function registerTodoCommands(context: vscode.ExtensionContext) {
             let data = await getTodos();
             deleteTodoById(treeItem.id, data);
             await updateTodosInWorkspace(data);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.deleteDoneTodo", async (treeItem: CustomTreeItem) => {
+            if (!isWorkspaceOpened() || treeItem.id === undefined) {
+                return;
+            }
+            let data = await getDoneTodos();
+            deleteDoneTodoById(treeItem.id, data);
+            await updateDoneTodosInWorkspace(data);
         })
     );
 
@@ -160,6 +181,56 @@ export function registerTodoCommands(context: vscode.ExtensionContext) {
             const data = await getTodos();
             await sortData(data);
             await updateTodosInWorkspace(data);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.ignoreFile", async (treeItem: CustomTreeItem) => {
+            if (!isWorkspaceOpened()) {
+                return;
+            }
+            const filePath = treeItem.resourceUri?.path;
+            if (!filePath) {
+                return;
+            }
+            const ignoredFiles = await getIgnoredFilePaths();
+            if (!ignoredFiles.includes(filePath)) {
+                ignoredFiles.push(filePath);
+                await setIgnoredFilePaths(ignoredFiles);
+                vscode.window.showInformationMessage(`File "${filePath}" has been added to ignored files.`);
+                vscode.commands.executeCommand("terrys-todos.refreshTodos");
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.ignoreFileLine", async (treeItem: CustomTreeItem) => {
+            if (!isWorkspaceOpened()) {
+                return;
+            }
+            const fileLine = `${treeItem.filePath}/${treeItem.lineNumber}`;
+            const ignoredLines = await getIgnoredFileLines();
+            if (!ignoredLines.includes(fileLine)) {
+                ignoredLines.push(fileLine);
+                await setIgnoredFileLines(ignoredLines);
+                const fileName = treeItem.filePath?.split("/").pop();
+                vscode.window.showInformationMessage(
+                    `Line ${treeItem.lineNumber} from ${fileName} has been added to ignored lines.`
+                );
+                vscode.commands.executeCommand("terrys-todos.refreshTodos");
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("terrys-todos.resetIgnoredFiles", async () => {
+            if (!isWorkspaceOpened()) {
+                return;
+            }
+            await setIgnoredFilePaths([]);
+            await setIgnoredFileLines([]);
+            vscode.window.showInformationMessage("Ignored files and lines have been reset.");
+            vscode.commands.executeCommand("terrys-todos.refreshTodos");
         })
     );
 }

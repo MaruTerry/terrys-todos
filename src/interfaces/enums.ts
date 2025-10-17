@@ -43,5 +43,7 @@ export enum ContextValue {
     FOLDER = "folder",
     WORKSPACE = "workspace",
     INLINE_COMMENTS = "inlineComments",
+    INLINE_FILE_GROUP = "inlineFileGroup",
     NODATA = "noData",
+    NOWORKSPACE = "noWorkspace",
 }

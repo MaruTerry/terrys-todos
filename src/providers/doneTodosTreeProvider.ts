@@ -4,6 +4,7 @@ import { getDoneTodos, showDates } from "../settings/workspaceProperties";
 import { CustomTreeItem, Todo, Folder } from "../interfaces/interfaces";
 import { ContextValue, TodoColor, Type } from "../interfaces/enums";
 import { formatDate } from "../util/date";
+import { isWorkspaceOpened } from "../util/workspace";
 
 /**
  * Tree data provider for displaying done todos in the sidebar tree view.
@@ -68,16 +69,25 @@ export class DoneTodosTreeDataProvider implements vscode.TreeDataProvider<Custom
      * @returns A promise with the array of children tree items.
      */
     getChildren(currentTreeItem?: CustomTreeItem): Thenable<CustomTreeItem[]> {
-        if (this.data.length > 0) {
-            if (!currentTreeItem) {
-                return Promise.resolve(this.getBaseItems());
-            } else {
-                return Promise.resolve(this.getFollowUpItems(currentTreeItem));
+        if (!currentTreeItem) {
+            if (isWorkspaceOpened() === false) {
+                const noWorkspaceItem = new vscode.TreeItem("", vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
+                noWorkspaceItem.description = "⚠️ Please open a workspace to use Terry's Todos";
+                noWorkspaceItem.contextValue = ContextValue.NOWORKSPACE;
+                return Promise.resolve([noWorkspaceItem]);
             }
+            if (this.data.length > 0) {
+                return Promise.resolve(this.getBaseItems());
+            }
+            const newItem = new vscode.TreeItem(
+                "Nothing done ._.",
+                vscode.TreeItemCollapsibleState.None
+            ) as CustomTreeItem;
+            newItem.contextValue = ContextValue.NODATA;
+            return Promise.resolve([newItem]);
+        } else {
+            return Promise.resolve(this.getFollowUpItems(currentTreeItem));
         }
-        const newItem = new vscode.TreeItem("Nothing done ._.", vscode.TreeItemCollapsibleState.None) as CustomTreeItem;
-        newItem.contextValue = ContextValue.NODATA;
-        return Promise.resolve([newItem]);
     }
 
     /**
